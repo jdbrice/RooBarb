@@ -1,0 +1,23 @@
+#images
+*.pdf
+*.eps
+*.png
+*.jpg
+*.jpeg
+
+#data files
+*.root
+
+#object types
+*.o
+*.os
+*.pcm
+/src/CintDictionary*
+/lib/*
+/script
+/script/sandbox/
+
+/bin
+/docs_venv/
+
+.sconsign.dblite
