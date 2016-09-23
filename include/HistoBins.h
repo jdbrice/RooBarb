@@ -18,6 +18,8 @@
 #include <unordered_map>
 using namespace std;
 
+#include "TMath.h"
+
 namespace jdb{
 
 	enum class BinEdge: int {
@@ -122,14 +124,13 @@ namespace jdb{
 		 * 				Otherwise 	: Bin Index starting at 0
 		 */
 		static int findBin( vector<double> &bins, double val, BinEdge includeEdge = BinEdge::lower ){
-            string sbe = "invalid";
-            if ( BinEdge::lower == includeEdge )
-                sbe = "lower";
-            else
-                sbe = "upper";
-            DEBUG( "HistoBins", "( vector<double> , value=" << val << ", binEdge=" << sbe << " ) " );
-
-
+            // string sbe = "invalid";
+            // if ( BinEdge::lower == includeEdge )
+            //     sbe = "lower";
+            // else
+            //     sbe = "upper";
+            // DEBUG( "HistoBins", "( vector<double> , value=" << val << ", binEdge=" << sbe << " ) " );
+            
 			int n = bins.size();
 
 			if ( n < 2 )
@@ -150,14 +151,18 @@ namespace jdb{
 				return -3;
 			}
 
-			// if not overflow / underflow
-			// then find the corresponding bin
-			for ( int i = n-2; i >= 0; i-- ){
-				if ( val >= bins[ i ] && includeEdge == BinEdge::lower )
-					return i;
-				else if ( val > bins[ i ] && includeEdge == BinEdge::upper )
-					return i;
+			
+			// binary search inludes lower bin edge by default design
+			if ( includeEdge == BinEdge::lower ){
+				return TMath::BinarySearch( n, bins.data(), val );
+			} else {
+				int iBin = TMath::BinarySearch( n, bins.data(), val );
+				if ( val == bins[ iBin ] )
+					return iBin - 1;
+				return iBin;
 			}
+			
+			
 
 			return -3;
 
