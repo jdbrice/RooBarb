@@ -19,7 +19,7 @@ cxxFlags 		= ['-std=c++11', '-fPIC' ]
 
 paths 			= [ '.', 			# dont really like this but ended up needing for root dict to work ok
 					'include', 
-					'include/ThirdParty' 
+					'include/Extra' 
 					]
 
 vars = Variables()
@@ -94,7 +94,14 @@ Depends( RooBarbRootAna, RooBarbConfig )
 common_env.Alias( 'RootAna', RooBarbRootAna )
 ############################## </ROOTANA> ########################################
 
-common_env.Alias( 'All', [ RooBarbCore, RooBarbConfig, RooBarbTasks, RooBarbUnitTest, RooBarbRootAna ] )
+############################## <Extra> ########################################
+RooBarbExtra    = common_env.StaticLibrary( target = 'lib/RooBarbExtra', source = [Glob( "src/Extra/*.cpp" )] )
+Depends( RooBarbExtra, RooBarbCore )
+common_env.Alias( 'Extra', RooBarbExtra )
+############################## </Extra> ########################################
+#
+#
+common_env.Alias( 'All', [ RooBarbCore, RooBarbConfig, RooBarbTasks, RooBarbUnitTest, RooBarbRootAna, RooBarbExtra ] )
 
 
 ########################### ROOT dictionary creation ##########################
