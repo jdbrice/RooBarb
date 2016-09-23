@@ -161,31 +161,9 @@ namespace jdb{
 					return iBin - 1;
 				return iBin;
 			}
-			
-			
 
 			return -3;
 
-		}	// findBin
-
-		/* Finds the bin via a LUT
-		 *
-		 * This method exports the range lookup to a LUT **unless** the value is near a bin-boundary, then it falls back to normal 
-		 */
-		static int findBin( double val, unordered_map<int, int> &_binIndexLUT, double _param){
-			int ival = transformToInt( _param, val );
-			if ( _binIndexLUT.count( ival ) <= 0 ) return -3;
-			if ( _binIndexLUT.size() > 0 && _param > 0.0 ){
-				int iHere = _binIndexLUT[ ival ];
-				int iPrev = _binIndexLUT[ ival - 1 ]; 
-				int iNext = _binIndexLUT[ ival + 1 ]; 
-				if ( iHere != iPrev || iHere != iNext )
-					return (int)BinEdge::ambiguous;
-				return iHere;
-			} else {
-				ERROR( "HistoBins", "Invalid LUT size / param " << _binIndexLUT.size() << " / " << _param );
-			}
-			return (int)BinEdge::undefined;
 		}	// findBin
 
 		/* Bin Width from vector of bin edges and bin index
@@ -213,12 +191,6 @@ namespace jdb{
 		 * @return 			the index of the bin see static implementation for more detail
 		 */
 		int findBin( double val, BinEdge includeEdge = BinEdge::lower ){
-			int iLUT = -4;
-			if ( useLUT )
-				iLUT = findBin( val, binIndexLUT, smallestBinWidth );
-			if ( iLUT != (int)BinEdge::ambiguous ) return iLUT;
-
-			// if the LUT got an ambiguouse result then fallback to the normal method
 			return findBin( bins, val, includeEdge );
 		} // findBin
 
@@ -411,57 +383,6 @@ namespace jdb{
 		// TODO: make the bin edges protected
 		// Vector of bin edges
 		vector<double> bins;	
-
-		unordered_map<int, int> binIndexLUT;
-		unordered_map<int, double> binWidthLUT;
-		bool useLUT = false;
-		double smallestBinWidth;
-		double transformedMin;
-		double transformedMax;
-		static int transformToInt( double param, double value ){
-			int out = (int)((value / param ) + 0.5);
-			return out;
-		}
-		static double transformFromInt( double param, int i ){
-			double out = (double)i * param;
-			return out;
-		}
-
-		int transformToInt( double val ){
-			return transformToInt( smallestBinWidth, val );
-		}
-		double transformFromInt( int i ){
-			return transformFromInt( smallestBinWidth, i );
-		}
-
-
-		void makeLUTs(){
-			smallestBinWidth = numeric_limits<double>::max();
-			for ( int i = 0; i < bins.size(); i++ ){
-				double bw = binWidth( i );
-				if ( bw > 0 && bw < smallestBinWidth ) smallestBinWidth = bw;
-			}
-
-			min = bins[0];
-			max = bins[ bins.size() - 1];
-			INFO( classname(), "Smallest Bin Width = " << smallestBinWidth );
-			smallestBinWidth = smallestBinWidth / 5.0;
-			transformedMin = transformToInt( smallestBinWidth, min );
-			transformedMax = transformToInt( smallestBinWidth, max );
-
-			
-			for ( int i = transformedMin - 1; i <= transformedMax + 1; i++ ){
-				double tv = transformFromInt( smallestBinWidth, i );
-				
-				int iBin = findBin( tv );
-				DEBUG( classname(), "int i = " << i << " -> " << tv << ", iBin=" << iBin );
-				binIndexLUT[ i ] = iBin;
-				if ( iBin >= 0 )
-					binWidthLUT[ i ] = binWidth( iBin );
-			}
-			INFO( classname(), "LUT::size=" << binIndexLUT.size() << " == nBins=" << nBins()  );
-			useLUT = true;
-		}
 
 		double minimum() {
 			return min;
