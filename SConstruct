@@ -103,14 +103,15 @@ if "LD_LIBRARY_PATH" in os.environ :
 else :
 	LD_LIBRARY_PATH = ""
 rootcint_env = Environment(ENV = {'PATH' : os.environ['PATH'], 'ROOTSYS' : os.environ[ "ROOTSYS" ], 'LD_LIBRARY_PATH' : LD_LIBRARY_PATH })
-rootcint_env.Append(CPPDEFINES 	 = cppDefines)
-rootcint_env.Append(CPPFLAGS 		  = cppFlags)
-rootcint_env.Append(CXXFLAGS 		  = cxxFlags)
-rootcint_env.Append(LINKFLAGS 	  = cxxFlags )
-rootcint_env.Append(CPPPATH		    = paths)
+rootcint_env.Append(CPPDEFINES = cppDefines)
+rootcint_env.Append(CPPFLAGS   = cppFlags)
+rootcint_env.Append(CXXFLAGS   = cxxFlags)
+rootcint_env.Append(LINKFLAGS  = cxxFlags )
+rootcint_env.Append(CPPPATH    = paths)
 
 rootcint = Builder( action='rootcint -f $TARGET -c $_CPPINCFLAGS $SOURCES.file' )  
 rootcint_env.Append( BUILDERS 		= { 'RootCint' : rootcint } )
+
 # hack to make the rootcint use abs path to headers
 rootcint_env[ "_CPPINCFLAGS" ] = str( " -I" + Dir(".").abspath + "/src/" ) + str( " -I" + Dir(".").abspath + "/include/" ) + str( " -I" + Dir(".").abspath + "/include/ThirdParty/" )
 
@@ -118,20 +119,24 @@ root_dict_src = rootcint_env.RootCint( "src/CintDictionary.cpp", [Glob( "include
 Clean( root_dict_src, "src/CintDictionary.o" )
 Clean( root_dict_src, "src/CintDictionary.cpp" )
 Clean( root_dict_src, "src/CintDictionary_rdict.pcm" )
+Clean( root_dict_src, "lib/CintDictionary_rdict.pcm" )
 
 
 rootcint_env[ "_LIBFLAGS" ] = common_env[ "_LIBFLAGS" ] + " " + ROOTLIBS + " "
 rootcint_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME']=1
 root_dict_obj = rootcint_env.Object( target='src/CintDictionary', source=["src/CintDictionary.cpp"] )
-# Depends( root_dict_obj, root_dict_src )
 rootcint_env.Alias( 'rootcint', root_dict_src )
 
-# rootcint_env.Alias( 'rootobj', root_dict_obj )
-# Depends( root_dict_obj, root_dict_src )
-root_dict_lib = rootcint_env.SharedLibrary( target='lib/RooBarb', source=[Glob( "#src/*.o" ), Glob( "#src/*/*.o" )] )
 
+root_dict_lib = rootcint_env.SharedLibrary( target='lib/RooBarb', source=[Glob( "#src/*.o" ), Glob( "#src/*/*.o" )] )
 Depends( root_dict_lib, [RooBarbCore, RooBarbConfig, RooBarbTasks, RooBarbUnitTest, RooBarbRootAna] )
-rootcint_env.Alias( 'dll', root_dict_lib )
+
+
+root_dict_install = Command( 	target="lib/CintDictionary_rdict.pcm",
+		 						source="src/CintDictionary_rdict.pcm",
+		 						action=Move( "$TARGET", "$SOURCE" ) )
+Depends( root_dict_install, root_dict_lib )
+rootcint_env.Alias( 'dll', root_dict_install )
 
 
 
