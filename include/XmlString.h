@@ -58,9 +58,6 @@ namespace jdb{
 
 			int stop = s.find( _tkstop, index >= pos ? index : pos);
 			len = stop - index + 1;
-
-			DEBUG( classname(), "start = " << index );
-			DEBUG( classname(), "stop = " << stop );
 			
 			if ( -1 == index || -1 == stop || len < 0 ) return rs;
 			
