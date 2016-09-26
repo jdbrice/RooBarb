@@ -11,6 +11,7 @@
 #pragma link C++ defined_in jdb;
 
 #pragma link C++ class jdb::Logger+;
+#pragma link C++ class jdb::ANSIColors+;
 #pragma link C++ class jdb::Reporter-;
 #pragma link C++ class jdb::XmlConfig+;
 #pragma link C++ class jdb::XmlString+;
