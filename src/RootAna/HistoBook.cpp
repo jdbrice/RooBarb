@@ -403,10 +403,16 @@ namespace jdb{
 					add( hName, tmp );
 				} else if ( config.exists( nodeName + ":bins_x" ) || config.exists( nodeName + ":bins_y" ) || config.exists( nodeName + ":bins_z" ) ) {
 					ERROR( classname(), "could not make histogram : " << hName );
-					ERROR( classname(), "x bins ( expected : " << ts( config.exists( nodeName + ":bins_x" ) ) << " )" << " : " << bx->toString() );
-					ERROR( classname(), "y bins ( expected : " << ts( config.exists( nodeName + ":bins_y" ) ) << " )" << " : " << bx->toString() );
-					ERROR( classname(), "z bins ( expected : " << ts( config.exists( nodeName + ":bins_z" ) ) << " )" << " : " << bx->toString() );
-					ERROR( classname(), "histo : " << tmp );
+					if ( config.exists( nodeName + ":bins_x" ) ){
+						ERROR( classname(), "x bins : " << bx->toString() );
+					}
+					if ( config.exists( nodeName + ":bins_y" ) ){
+						ERROR( classname(), "y bins : " << by->toString() );
+					}
+					if ( config.exists( nodeName + ":bins_z" ) ){
+						ERROR( classname(), "z bins : " << bz->toString() );
+					}
+					// ERROR( classname(), "histo : " << tmp );
 				}
 			} else {
 				WARN( classname(), "Duplicate " << hName << " Cannot Add" );
