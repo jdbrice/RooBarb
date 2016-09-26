@@ -265,7 +265,7 @@ namespace jdb{
 	}
 
 	string XmlConfig::operator[]( string nodePath ) const {
-		return getString( nodePath);
+		return getXString( nodePath);
 	}
 
 	vector<string> & XmlConfig::split(const string &s, char delim, vector<string> &elems) const {
