@@ -403,9 +403,9 @@ namespace jdb{
 					add( hName, tmp );
 				} else if ( config.exists( nodeName + ":bins_x" ) || config.exists( nodeName + ":bins_y" ) || config.exists( nodeName + ":bins_z" ) ) {
 					ERROR( classname(), "could not make histogram : " << hName );
-					ERROR( classname(), "x bins : " << bx->toString() );
-					ERROR( classname(), "y bins : " << by->toString() );
-					ERROR( classname(), "z bins : " << bz->toString() );
+					ERROR( classname(), "x bins ( expected : " << ts( config.exists( nodeName + ":bins_x" ) ) << " )" << " : " << bx->toString() );
+					ERROR( classname(), "y bins ( expected : " << ts( config.exists( nodeName + ":bins_x" ) ) << " )" << " : " << bx->toString() );
+					ERROR( classname(), "z bins ( expected : " << ts( config.exists( nodeName + ":bins_x" ) ) << " )" << " : " << bx->toString() );
 					ERROR( classname(), "histo : " << tmp );
 				}
 			} else {
