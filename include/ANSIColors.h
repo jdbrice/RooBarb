@@ -48,6 +48,8 @@ namespace jdb{
 				return ANSIColors::BLUE + brightMod;
 			if ( "yellow" == _color || "Yellow" == _color || "YELLOW" == _color )
 				return ANSIColors::YELLOW + brightMod;
+			if ( "green" == _color || "Green" == _color || "GREEN" == _color )
+				return ANSIColors::GREEN + brightMod;
 			return ANSIColors::FG_DEFAULT;
 		}
 

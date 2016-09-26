@@ -78,6 +78,8 @@ void TaskEngine::runTasks(){
 
 		delete taskRunner;
 
+		INFO( classname(), "Task :" << _type << " " << _name << ANSIColors::color( " Complete", "green" ) );
+
 	}// loop on task paths
 }// runTasks
 
