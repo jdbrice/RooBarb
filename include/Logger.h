@@ -58,6 +58,8 @@
 #include <algorithm>
 using namespace std;
 
+#include "ANSIColors.h"
+
 
 namespace jdb {
 
@@ -331,9 +333,11 @@ namespace jdb {
 
 			string coloredLevel = level;
 			if ( showColors && logLevelFromString( tag ) == llError )
-				coloredLevel = "\033[1;31m" + level + "\033[0;m";
+				coloredLevel = ANSIColors::color( level, "red" );
+				// coloredLevel = "\033[1;31m" + level + "\033[0;m";
 			else if ( showColors && logLevelFromString( tag ) == llWarn )
-				coloredLevel = "\033[1;33m" + level + "\033[0;m";
+				coloredLevel = ANSIColors::color( level, "yellow" );
+				// coloredLevel = "\033[1;33m" + level + "\033[0;m";
 
 			int w1 = 8;
 			if ( cSpace.length() >= 2 && functionName.length() >= 2 )
