@@ -55,6 +55,17 @@ namespace jdb{
 			string &_tkstop = XmlString::TOKEN_STOP;
 
 			index = s.find( _tkstart, pos );
+			string test;
+			test.push_back(s[index+1]);
+			while( _tkstart == test ){
+				int nindex = s.find( _tkstart, index+3 );
+				DEBUG( classname(), "escaped {{ @" << index );
+				if ( nindex < index ){
+					index = nindex;
+					break;
+				}
+				index = nindex;
+			}
 
 			int stop = s.find( _tkstop, index >= pos ? index : pos);
 			len = stop - index + 1;
@@ -82,7 +93,22 @@ namespace jdb{
 				DEBUG( classname(), key );
 				key = first_token_at( _s, index, len, pos );
 			}
+			unescape(_s);
 			return _s;
+		}
+
+		void unescape( string &_s ){
+			int index = _s.find( "{{", 0 );
+			while( index >= 0 ){
+				_s.replace( index, 1, "" );
+				index = _s.find( "{{", index+1 );
+			}
+
+			index = _s.find( "}}", 0 );
+			while( index >= 0 ){
+				_s.replace( index, 1, "" );
+				index = _s.find( "}}", index+1 );
+			}
 		}
 
 
