@@ -5,7 +5,7 @@ import os
 LIB_NAME 		= "lib/RooBarb"
 
 ROOTCFLAGS    	= subprocess.check_output( ['root-config',  '--cflags'] ).rstrip().split( " " )
-ROOTLDFLAGS    	= subprocess.check_output( ["root-config",  "--ldflags"] )
+ROOTLDFLAGS    	= subprocess.check_output( ["root-config",  "--ldflags"] ).rstrip().split( " " )
 ROOTLIBS      	= subprocess.check_output( ["root-config",  "--libs"] )
 ROOTGLIBS     	= subprocess.check_output( ["root-config",  "--glibs"] )
 ROOTLIBPATH 	= subprocess.check_output( ["root-config", "--libdir" ] )
@@ -42,6 +42,7 @@ common_env.Append(CPPDEFINES 	= cppDefines)
 common_env.Append(CPPFLAGS 		= cppFlags)
 common_env.Append(CXXFLAGS 		= cxxFlags)
 common_env.Append(LINKFLAGS 	= cxxFlags ) 
+common_env.Append(LINKFLAGS		= ROOTLDFLAGS )
 common_env.Append(CPPPATH		= paths)
 
 
