@@ -111,6 +111,7 @@ namespace jdb {
 		 * @Filename 	path to XML file
 		 */
 		void loadFile( string filename );
+		void loadFile( string filename, map<string, string> overrides );
 
 		/* Gets the filename of the current XML file loaded into memory
 		 *
@@ -222,6 +223,9 @@ namespace jdb {
 		 *
 		 */
 		map<int, int> getIntMap( string nodePath ) const;
+
+		map<float, float> getFloatMap( string nodePath ) const;
+
 
 		/* Gets a node or attribute as double type
 		 * @nodePath Path to node. See getString(...)

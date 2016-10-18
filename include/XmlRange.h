@@ -3,9 +3,12 @@
 
 #include "XmlConfig.h"
 #include "Utils.h"
+#include "IObject.h"
+using namespace jdb;
+
 #include <limits>       // std::numeric_limits
 #include <memory>
-using namespace jdb;
+using namespace std;
 
 namespace jdb{
 
@@ -19,10 +22,10 @@ namespace jdb{
 	 * <Range min="100" max="100" />
 	 * ```
 	 */
-	class XmlRange
+	class XmlRange : public IObject
 	{
 	public:
-		
+		virtual const char* classname() const { return "XmlRange"; }
 		//Minimum value in range
 		double min;
 		//Maximum value in range
@@ -70,9 +73,11 @@ namespace jdb{
 		 * @return A string representation of the range data in the format "( min -> max )"
 		 */
 		string toString(){
-			if ( std::numeric_limits<double>::max()  == max )
+			if ( std::numeric_limits<double>::max()  == max && std::numeric_limits<double>::lowest() == min ){
+				return ( "( -inf -> inf )" );
+			} else if ( std::numeric_limits<double>::max()  == max )
 				return ("( " + dts( min ) + " -> inf )");
-			else if ( std::numeric_limits<double>::min()  == min )
+			else if ( std::numeric_limits<double>::lowest() == min )
 				return ("( -inf -> " + dts( max ) + " )");
 			else		
 				return ("( " + dts( min ) + " -> " + dts( max ) + " )");

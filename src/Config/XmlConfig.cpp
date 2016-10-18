@@ -46,6 +46,10 @@ namespace jdb{
 	}
 
 	void XmlConfig::loadFile( string _filename ){
+		map<string, string> empty_overrides;
+		loadFile( _filename, empty_overrides );
+	}
+	void XmlConfig::loadFile( string _filename, map<string, string> overrides ){
 		DEBUG( classname(), "Loading " << _filename );
 		
 		// check that the config file exists
@@ -58,6 +62,9 @@ namespace jdb{
 			RapidXmlWrapper rxw( _filename );
 #endif
 			rxw.getMaps( &data, &isAttribute, &nodeExists );
+
+			// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
+			applyOverrides( overrides );
 
 			parseIncludes();
 		} else {
@@ -146,6 +153,21 @@ namespace jdb{
 		for ( unsigned int i = 0; i < pairVec.size(); i++ ){
 			pair<string, string> parts = stringToPair( pairVec[ i ], mapDelim );
 			rmap[ atoi( parts.first.c_str() ) ] = atoi( parts.second.c_str() );
+		}
+		return rmap;
+	}
+
+	map<float, float> XmlConfig::getFloatMap( string nodePath ) const{
+
+		// first get a vector of comma delimeted pairs
+		string value = getXString( nodePath );
+		vector<string> pairVec =  vectorFromString( value );
+		
+		map<float, float> rmap;
+		// now we need to split each pair
+		for ( unsigned int i = 0; i < pairVec.size(); i++ ){
+			pair<string, string> parts = stringToPair( pairVec[ i ], mapDelim );
+			rmap[ atof( parts.first.c_str() ) ] = atof( parts.second.c_str() );
 		}
 		return rmap;
 	}
@@ -741,7 +763,7 @@ namespace jdb{
 			DEBUG( classname(), path )
 			DEBUG( classname(), "parent path: " << pathToParent( path ) )
 
-			string ifn = getString( path + ":url" );
+			string ifn = getXString( path + ":url" );
 			struct stat buffer;
 			bool exists = (stat (ifn.c_str(), &buffer) == 0);
 			DEBUG( classname(), "file " << ifn << " exists " << exists )
@@ -768,8 +790,9 @@ namespace jdb{
 	}
 
 	void XmlConfig::applyOverrides( map< string, string > over ) {
-
+		DEBUG( classname(), "Applying Overrides" );
 		for ( auto k : over ){
+			DEBUG( classname(), "Override [" << k.first << " ] = " << k.second );
 			set( k.first, k.second );
 		}
 	}

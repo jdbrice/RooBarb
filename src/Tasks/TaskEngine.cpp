@@ -22,8 +22,8 @@ TaskEngine::TaskEngine( int argc, char *argv[] ){
 			if ( !fileExists( argv[1] ) ){
 				ERROR( classname(), "Cannot load " << argv[1] << ": File DNE" );
 			} else {
-				config.loadFile( argv[1] );
-				config.applyOverrides( cmdLineConfig );
+				// passing as second arg here loads the overrides BEFORE evaluating include URLS
+				config.loadFile( argv[1], cmdLineConfig );
 
 				Logger::setGlobalLogLevel( config.getString( "Logger:globalLogLevel" ) );
 
@@ -56,8 +56,9 @@ void TaskEngine::runTasks(){
 			_taskConfig = config;
 		} else if ( fileExists( _configFile ) ){
 			INFO( classname(), "Using " << _configFile << " config for task" );
-			_taskConfig.loadFile( _configFile );
-			_taskConfig.applyOverrides( cmdLineConfig );
+			// passing as second arg here loads the overrides BEFORE evaluating include URLS
+			_taskConfig.loadFile( _configFile, cmdLineConfig );
+			// _taskConfig.applyOverrides( cmdLineConfig );
 		} else {
 			ERROR( classname(), "Cannot load config " << _configFile );
 			continue;

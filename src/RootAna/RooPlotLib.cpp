@@ -239,6 +239,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 			int c = atoi( params[ 0 ].c_str() );
 			if ( colorFromString >= 0 )
 				c = colorFromString;
+			DEBUG( classname(), "LC COLOR=" << c );
 			line->SetLineColor( c );
 
 		}
@@ -258,14 +259,14 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 			int c = atoi( params[ 0 ].c_str() );
 			if ( colorFromString >= 0 )
 				c = colorFromString;
+			DEBUG( classname(), "FC COLOR=" << c );
 			fill->SetFillColor( c );
 		}
-		if ( "fillcoloralpha" == option || "fca" == option 
-			 || "color" == option || "c" == option ){
+		if ( "fillcoloralpha" == option || "fca" == option ){
 			int c = atoi( params[ 0 ].c_str() );
 			if ( colorFromString >= 0 )
 				c = colorFromString;
-
+				DEBUG( classname(), "FCA COLOR=" << c );
 #if ROOT6 > 0
 			if ( "" != params[ 1 ] ){
 				if ( nullptr != h )
@@ -303,6 +304,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 			int c = atoi( params[ 0 ].c_str() );
 			if ( colorFromString >= 0 )
 				c = colorFromString;
+			DEBUG( classname(), "MC COLOR=" << c );
 			marker->SetMarkerColor( c );
 		}
 		if ( "markersize" == option || "ms" == option ){

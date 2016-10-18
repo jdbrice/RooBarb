@@ -126,15 +126,18 @@ namespace jdb{
 		bool setBinError( string name, int bin, double error );
 		
 
-		TH1 * make( string type, string name, string title, HistoBins &bx, HistoBins &by, HistoBins &bz );
+		static TH1 * make( string type, string name, string title, HistoBins &bx, HistoBins &by, HistoBins &bz );
+		// TH1 * make( string type, string name, string title, HistoBins &bx, HistoBins &by, HistoBins &bz ){
+		// 	return HistoBook::make( type, name, title, bx, by, bz );
+		// }
 		TH1 * make( string type, string name, string title, HistoBins &bx, HistoBins &by ){
 			HistoBins bz;
-			return make( type, name, title, bx, by, bz );
+			return HistoBook::make( type, name, title, bx, by, bz );
 		}
 		TH1 * make( string type, string name, string title, HistoBins &bx ){
 			HistoBins by;
 			HistoBins bz;
-			return make( type, name, title, bx, by, bz );	
+			return HistoBook::make( type, name, title, bx, by, bz );	
 		}
 		/*
 		 * Makes a histogram from a node in a config file 

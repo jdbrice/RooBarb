@@ -61,6 +61,7 @@ namespace jdb{
 			if ( ranges.count( name ) > 0 )
 				return ranges[ name ];
 
+			ERROR( classname(), name << " DNE" );
 			return nullptr;
 		} // operator[]
 
@@ -94,10 +95,11 @@ namespace jdb{
 		} // init
 
 		void setDefault( string name, double min, double max ){
-			if ( ranges.count( name ) <= 0 ){
+			if ( false == has( name ) ){
 				ranges[ name ] = shared_ptr<XmlRange>( new XmlRange( ) );
 				ranges[name]->min = min;
 				ranges[name]->max = max;
+				DEBUG( classname(), "Setting Default for[ " << name << " = (" << min << ", " << max << ")" );
 			}
 		}
 

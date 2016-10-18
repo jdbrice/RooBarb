@@ -299,7 +299,7 @@ namespace jdb{
 	}	// sanitizePath
 	
 	TH1 * HistoBook::make( string _type, string _name, string _title, HistoBins &_bx, HistoBins &_by, HistoBins &_bz ){
-		DEBUG( classname(), "type=" << _type << " name=\"" << _name << "\" title=\"" << _title << "\" bx=" << _bx.toString() << ", by=" << _by.toString() << ", bz=" << _bz.toString() );
+		DEBUG( "HistoBook", "type=" << _type << " name=\"" << _name << "\" title=\"" << _title << "\" bx=" << _bx.toString() << ", by=" << _by.toString() << ", bz=" << _bz.toString() );
 
 		int nD = 0;
 		if ( (_bx.nBins() > 0) && (_by.nBins() <= 0) && (_bz.nBins() <= 0) )
@@ -309,7 +309,7 @@ namespace jdb{
 		if ( (_bx.nBins() > 0) && (_by.nBins() > 0) && (_bz.nBins() > 0) )
 			nD = 3;
 
-		TRACE( classname(), "nDimensions = " << nD );
+		TRACE( "HistoBook", "nDimensions = " << nD );
 
 		if ( 1 == nD ){
 			if ( "C" == _type )
@@ -348,7 +348,7 @@ namespace jdb{
 				return new TH3D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
 		} // make 2Ds
 
-		WARN( classname(), "Unable to make Histogram " << _type << ", " << _name << ", " << _title );
+		WARN( "HistoBook", "Unable to make Histogram " << _type << ", " << _name << ", " << _title );
 		return nullptr;
 	}
 
