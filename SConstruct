@@ -39,6 +39,7 @@ if int(common_env[ "RELEASE" ]) >= 1 :
 
 
 common_env.Append(CPPDEFINES 	= cppDefines)
+cxxFlags.extend( ROOTCFLAGS )
 common_env.Append(CPPFLAGS 		= cppFlags)
 common_env.Append(CXXFLAGS 		= cxxFlags)
 common_env.Append(LINKFLAGS 	= cxxFlags ) 
@@ -80,7 +81,6 @@ common_env.Alias( 'UnitTest', RooBarbUnitTest )
 
 ############################## <ROOTANA> ########################################
 RootAnaEnv = common_env.Clone();
-cxxFlags.extend( ROOTCFLAGS )
 RootAnaEnv.Append(CXXFLAGS 		= cxxFlags)
 RootAnaEnv.Append(LINKFLAGS 	= cxxFlags ) 
 RootAnaEnv.Append(CPPPATH		= [ROOT_SYS + "/include"] )
