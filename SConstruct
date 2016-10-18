@@ -22,6 +22,7 @@ paths 			= [ '.', 			# dont really like this but ended up needing for root dict 
 					'include/Extra' 
 					]
 
+
 vars = Variables()
 vars.Add('RELEASE', 'Set to 1 to build for release', 0)
 vars.Add('LL', 'LogLevel : ALL = 60, DEBUG = 50, TRACE = 40, INFO = 30, WARN = 20, ERROR = 10, NONE = 0', 60)
