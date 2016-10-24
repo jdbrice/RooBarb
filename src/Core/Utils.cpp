@@ -94,6 +94,16 @@ namespace jdb{
 	 	return str;
 	 }
 
+	std::string vts( vector<string> v ){
+		string str = "";
+		string delim = "";
+		for ( string i : v ){
+			str += delim + i;
+			delim=", ";
+		}
+		return str;
+	}
+
 
 	 std::string bts( bool b ){
 	 	if ( b )

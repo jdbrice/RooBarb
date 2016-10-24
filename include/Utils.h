@@ -105,6 +105,15 @@ namespace jdb{
 	  */
 	std::string vts( vector<double> v );
 
+	/* Converts vector to string
+	  * @v 		vector to convert
+	  *
+	  * Converts vector to string
+	  *
+	  * @return string representation of vector
+	  */
+	std::string vts( vector<string> v );
+
 	/* Converts bool to string
 	  * @b 		bool to convert
 	  *

@@ -163,7 +163,7 @@ namespace jdb{
 				int status = config.getInt( path + ":status", 0 );
 				string active = "Active";
 				if ( !status )
-						active = "Inactive";
+					active = "Inactive";
 
 				vector<string> bNames = config.getStringVector( path );
 
