@@ -10,7 +10,6 @@
 #include <cstring>
 #include <fstream>
 #include <map>
-#include <unordered_map>
 using namespace std;
 using namespace rapidxml;
 
@@ -127,21 +126,21 @@ public:
 
 
 
-	void getMaps( unordered_map<string, string> *data, unordered_map<string, bool> * isAttribute, unordered_map<string, bool> *exists ){
+	void getMaps( map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 
 		xml_node<> *node = doc.first_node();
 		makeMap( node, "", data, isAttribute, exists );
 
 	}
 
-	void includeMaps( string context, unordered_map<string, string> *data, unordered_map<string, bool> * isAttribute, unordered_map<string, bool> *exists ){
+	void includeMaps( string context, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 
 		xml_node<> *node = doc.first_node();
 		makeMap( node, context, data, isAttribute, exists );
 
 	}
 
-	void makeMap( xml_node<> * node, string cp, unordered_map<string, string> *data, unordered_map<string, bool> * isAttribute, unordered_map<string, bool> *exists ){
+	void makeMap( xml_node<> * node, string cp, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 
 		map< string, int > index;
 		for (xml_node<> *child = node->first_node(); child; child = child->next_sibling() ){

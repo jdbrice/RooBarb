@@ -121,6 +121,11 @@ namespace jdb{
 	 */
 	void progressBar( int i, int nevents, int textWidth, double elapsedTime, bool skipNonTTY ){
 		
+		bool tty = isatty( fileno(stdout) );
+		string crc = "\r";
+		if ( !tty )
+			crc = "\n";
+
 		// for output
 		double progress =  ((double)i / (double)nevents);
 		if ( i == nevents - 1)
@@ -134,8 +139,8 @@ namespace jdb{
     	// decide when to update
     	if ( i == 0 || (i % res ) == 0 || i == nevents - 1  ){
 			// skip for non interactive output
-			if (!isatty(fileno(stdout)) && progress <= 1 && skipNonTTY )
-				return;
+			// if (!isatty(fileno(stdout)) && progress <= 1 && skipNonTTY )
+			// 	return;
 
 			double per = progress  * 100;
 			per = round( per );
@@ -148,8 +153,12 @@ namespace jdb{
 	    		else 
 	    			cout << " ";
 	    	}
-	    	if (isatty(fileno(stdout)) ){ 
-		 	   	cout << "]" << per << "%" ;
+	    	if ( true ){ 
+	    		if ( per >= 10 )
+		 	   		cout << "]" << per << "%" ;
+				else 
+					cout << "] " << per << "%" ;
+
 				if ( elapsedTime >= 0 ){
 					
 					int nDig = 3;
@@ -172,13 +181,17 @@ namespace jdb{
 							cout << " : " << nm << "m " << ts( ns, nDig ) << "s";
 					}
 				}
-				cout << "\r";
+				cout << crc;
 				std::cout.flush();
-				if (progress > 1)
+				if (progress > 1 && tty ) 
 					cout << "[" << endl;
-			} else {
-					cout << "]" << per << "%" << "\n";
 			}
+			//  else {
+			// 	if ( per >= 10 )
+			// 		cout << "]" << per << "%" << "\n";
+			// 	else 
+			// 		cout << "] " << per << "%" << "\n";
+			// }
 		}
 	}
 

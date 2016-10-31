@@ -12,7 +12,7 @@
 #include <exception>
 #include <sstream>
 #include <map>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <iomanip>
 #include <memory>
@@ -36,18 +36,18 @@ namespace jdb {
 	protected:
 
 		// Node existance
-		unordered_map<string, bool> nodeExists;
+		map<string, bool> nodeExists;
 		
 		// data - map of node path to string representation
-		unordered_map<string, string> data;
+		map<string, string> data;
 
 		// does the nodepath point to an attribute value
-		unordered_map<string, bool> isAttribute;
+		map<string, bool> isAttribute;
 		
 		// map<string, string> iterator
-		typedef unordered_map<string, string>::iterator map_it_type;
+		typedef map<string, string>::iterator map_it_type;
 		// map<string, string> const iterator
-		typedef unordered_map<string, string>::const_iterator const_map_it_type;
+		typedef map<string, string>::const_iterator const_map_it_type;
 
 		//Filename of the config file
 		string filename;
