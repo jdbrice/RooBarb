@@ -8,17 +8,20 @@ namespace jdb {
 	XmlFunction::XmlFunction(){
 	}
 
-	XmlFunction::XmlFunction( XmlConfig * cfg, string nodePath, string pMod, string eMod, string formMod, string covMod ){
-		set( *cfg, nodePath, pMod, eMod, formMod, covMod );
+	XmlFunction::XmlFunction( XmlConfig * cfg, string nodePath, string pMod, string eMod, string formMod, string covMod, string nameMod ){
+		set( *cfg, nodePath, pMod, eMod, formMod, covMod, nameMod );
 	}
-	XmlFunction::XmlFunction( XmlConfig &cfg, string nodePath, string pMod, string eMod, string formMod, string covMod ){
-		set( cfg, nodePath, pMod, eMod, formMod, covMod );
+	XmlFunction::XmlFunction( XmlConfig &cfg, string nodePath, string pMod, string eMod, string formMod, string covMod, string nameMod ){
+		set( cfg, nodePath, pMod, eMod, formMod, covMod, nameMod );
 	}
 
-	void XmlFunction::set( XmlConfig &cfg, string nodePath, string pMod, string eMod, string formMod, string covMod ){
+	void XmlFunction::set( XmlConfig &cfg, string nodePath, string pMod, string eMod, string formMod, string covMod, string nameMod ){
 
+		string name = cfg.getXString( nodePath + nameMod, "xmlfunction_" + ts(instances) );
 		string formula = cfg.getString( nodePath + formMod );
-		func = unique_ptr<TF1> (new TF1( ("xmlfunction_" + ts(instances)).c_str(), formula.c_str() ) );
+
+		INFO( classname(), "TF1 <\"" << name << "\" = " << formula << ">" );
+		func = unique_ptr<TF1> (new TF1( name.c_str(), formula.c_str() ) );
 	 
 		int p = 0;
 		while ( cfg.exists( nodePath + pMod + ts(p) ) ){

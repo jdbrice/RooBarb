@@ -38,10 +38,10 @@ namespace jdb{
 		 * @eMod 		Default : ':e' - the modifier to get the parameter error from node path
 		 * @formMod 	Default : ':formula' - the modifier to get the formula from node path
 		 */
-		XmlFunction( XmlConfig * cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov");
-		XmlFunction( XmlConfig &cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov");
+		XmlFunction( XmlConfig * cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov", string nameMod=":name");
+		XmlFunction( XmlConfig &cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov", string nameMod=":name");
 		XmlFunction();
-		void set( XmlConfig &cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov");
+		void set( XmlConfig &cfg, string nodePath, string pMod = ":p", string eMod = ":e", string formMod = ":formula", string covMod = ":cov", string nameMod=":name");
 		/* Destructor
 		 *
 		 */
