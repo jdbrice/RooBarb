@@ -13,6 +13,7 @@ using namespace jdb;
 // STL
 #include <string>
 #include <sstream>
+#include <limits>
 using namespace std;
 
 // ROOT
@@ -21,6 +22,7 @@ using namespace std;
 
 // Unit testing macros
 #define UT_EQ( x, y ) UnitTest::eq( x, y )
+#define UT_DEQ( x, y, z ) UnitTest::eq( x, y, z )
 #define UT_R_NAMED( x, y ) UnitTest::root_named( x, y )
 #define UT_TRUE( x ) UnitTest::eq_true( x )
 #define UT_TEST( x, y ) INFO( "", x << " : " << y )
@@ -84,9 +86,9 @@ public:
         }
     }
 
-    static string eq( double life, double hope, double tolerance = 0.001 /*percent of life */) {
+    static string eq( double life, double hope, double tolerance = std::numeric_limits<double>::epsilon() /*absolute toleance */) {
         nTotal++;
-        if ( fabs( life - hope ) < ( life * tolerance ) ){
+        if ( fabs( life - hope ) < ( tolerance ) ){
             passed = true;
             nPassed ++;
             return green( "PASS" );
