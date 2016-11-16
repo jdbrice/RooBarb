@@ -111,6 +111,14 @@ namespace jdb{
 	 	return "false";
 	 }
 
+
+	std::string indentation( int count, std::string tab ) {
+		string is = "";
+		for ( int i = 0; i < count; i++ )
+			is += tab;
+		return is;
+	}
+
 	/**
 	 * Plain text progress bar that only updates when it needs to
 	 * @i 			the current step in a loop
