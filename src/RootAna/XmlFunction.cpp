@@ -46,6 +46,10 @@ namespace jdb {
 			cov = cfg.getDoubleVector( nodePath + covMod );
 			DEBUG( classname(), "cov array length : " << cov.size() );
 		}
+
+		if ( cfg.exists( nodePath + ":min" ) && cfg.exists( nodePath + ":max" ) ){
+			func->SetRange( cfg.getDouble( nodePath + ":min" ), cfg.getDouble( nodePath + ":max" ) );
+		}
 	}
 
 }
