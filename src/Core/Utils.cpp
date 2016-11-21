@@ -119,6 +119,10 @@ namespace jdb{
 		return is;
 	}
 
+	std::string quote( std::string str ){
+		return "\"" + str + "\"";
+	}
+
 	/**
 	 * Plain text progress bar that only updates when it needs to
 	 * @i 			the current step in a loop

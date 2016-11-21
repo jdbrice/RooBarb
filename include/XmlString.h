@@ -111,6 +111,61 @@ namespace jdb{
 			}
 		}
 
+		bool hasTokens( string _s ){
+			int index = -1;
+			int len = -1;
+			int pos = 0;
+			string key = first_token_at( _s, index, len, pos );
+			if ( key == _s )
+				return false;
+			return true;
+		}
+
+		vector<string> tokens( string _s, int n = -1 ) {
+			int index = -1;
+			int len = -1;
+			int pos = 0;
+			vector<string> tks;
+			string key = first_token_at( _s, index, len, pos );
+			int iToken = 1;
+			while ( index >= 0 ){
+				tks.push_back( key );
+				if ( n >= 1 && iToken >= n ) return tks;
+				
+				_s.replace( index, len, "" );
+				DEBUG( classname(), "new : " << _s );
+
+				pos = index;
+				DEBUG( classname(), "pos = " << pos );
+				DEBUG( classname(), key );
+				key = first_token_at( _s, index, len, pos );
+				iToken ++;
+			}
+			return tks;
+		}
+
+		string clean( string _s, int n = -1 ) {
+			int index = -1;
+			int len = -1;
+			int pos = 0;
+			string key = first_token_at( _s, index, len, pos );
+			int iToken = 1;
+			while ( index >= 0 ){
+
+				_s.replace( index, len, "" );
+				DEBUG( classname(), "new : " << _s );
+
+				pos = index;
+				DEBUG( classname(), "pos = " << pos );
+				DEBUG( classname(), key );
+				key = first_token_at( _s, index, len, pos );
+				if ( n >= 1 && iToken >= n ) return _s;
+				iToken ++;
+			}
+			unescape(_s);
+			return _s;
+		}
+
 
 	protected:
 		map<string, string> kv;
