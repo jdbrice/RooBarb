@@ -337,6 +337,13 @@ namespace jdb {
 		 * node or attribute matching the query
 		 */
 		vector<string> getNodes( string nodePath ) const;
+		vector<string> query( string _qs ) const;
+		string q( string _qs ) const {
+			vector<string> qrs = query( _qs );
+			if ( qrs.size() >= 1 )
+				return qrs[0];
+			return "";
+		}
 
 		/*Splits a string into pieces by the delimeter character
 		 *@s Input string to split
@@ -347,6 +354,7 @@ namespace jdb {
 		 *character is not found a zero length Vector is returned.
 		 */
 		vector<string> split(const string &s, char delim) const ;
+		vector<string> split(string &s, string delim) const ;
 
 		/*Trims characters off the front and back of strings
 		 *@str Input string to trim
@@ -469,6 +477,7 @@ namespace jdb {
 		vector<string> vectorFromString( string data ) const;
 		// Splits strings using the given delim character
 		vector<string> &split(const string &s, char delim, vector<string> &elems) const;
+		vector<string> &split(string &s, string delim, vector<string> &elems) const;
 
 		// A special case version of split used for the map decoding
 		// Allows string delimeter
@@ -486,6 +495,9 @@ namespace jdb {
 
 		// 
 		void parseIncludes(  );
+
+
+		bool passConditional( string cond, string nodePath ) const;
 
 
 		// Adding content

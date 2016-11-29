@@ -125,6 +125,8 @@ namespace jdb{
 
 	std::string indentation( int count, std::string tab="\t" );
 
+	std::string quote( std::string str );
+
 
 	/* Task Timer
 	 * Utility Class for timing tasks and reporting

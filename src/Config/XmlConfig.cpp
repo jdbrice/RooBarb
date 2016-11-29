@@ -299,6 +299,18 @@ namespace jdb{
 		return elems;
 	}
 
+	vector<string> & XmlConfig::split( string &s, string delim, vector<string> &elems) const {
+		size_t pos = 0;
+		std::string token;
+		while ((pos = s.find(delim)) != std::string::npos) {
+			token = s.substr(0, pos);
+			elems.push_back( token );
+			s.erase(0, pos + delim.length() );
+		}
+		elems.push_back( s );
+		return elems;
+	}
+
 	vector<string> XmlConfig::vectorFromString( string data ) const {
 				
 		vector<string> d = split( data, ',' );
@@ -322,6 +334,12 @@ namespace jdb{
 	}
 
 	vector<string> XmlConfig::split(const string &s, char delim) const {
+		vector<string> elems;
+		split(s, delim, elems);
+		return elems;
+	}
+
+	vector<string> XmlConfig::split(string &s, string delim) const {
 		vector<string> elems;
 		split(s, delim, elems);
 		return elems;
@@ -545,6 +563,86 @@ namespace jdb{
 			rmap[ attributeName( p ) ] = getString( p );
 		}
 		return rmap;
+	}
+
+
+	vector<string> XmlConfig::query( string _qs ) const {
+		// Query String _qs :
+		// 1) nodePath* - all nodepaths matching base, star optional -> like child selector
+		// 
+		// 
+		
+		XmlString xstr;
+		vector<string> conds = xstr.tokens( _qs );
+		string npc = trim( xstr.clean( _qs ), " \t\n*" ); // remove whitespace and '*'maybe we can improve star support later
+
+		string np = "";
+		string attr = "";
+
+		vector<string> attrs = split( npc, attrDelim );
+
+		if ( attrs.size() >= 1 )
+			np = attrs[0];
+		if ( attrs.size() >= 2)
+			attr = attrDelim + attrs[1];
+
+		DEBUG( classname(), "_qs == \"" << _qs << "\"" );
+		DEBUG( classname(), "conditionals " << vts( conds ) );
+		DEBUG( classname(), "wo-cond np " << quote( np ) );
+		DEBUG( classname(), "attr" << quote( attr ) );
+
+		int npl = np.length();
+
+		vector<string> paths;
+
+		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+			string p = it->first;
+
+			// Skip atribute paths
+			size_t found = p.find( attrDelim );
+			if ( found != string::npos )
+				continue;
+			
+			string parent = p.substr( 0, npl );
+			if ( np == parent ){
+
+				if ( conds.size() < 1 )
+					paths.push_back( p + attr );
+				else if( passConditional( conds[0], p ) ){
+					paths.push_back( p + attr );
+				}
+			}
+		}
+
+		// pre-conditional part
+		
+		
+		return paths;
+	}
+
+	bool XmlConfig::passConditional( string cond, string nodePath ) const {
+
+		// split by logical operators first
+		if ( cond.find( "&&" ) != std::string::npos ){
+			// TODO: add recursive splitting to allow logical operators && ||
+		}
+		// at this point we think that we have no logical operators only comparisons ==, >, <
+		vector<string> parts = split( cond, "==" );
+		string trimCs = " \t\n";
+		trimCs += attrDelim;
+
+		if ( parts.size() >= 2 ){
+			DEBUG( classname(), "left: " << parts[0] );
+			DEBUG( classname(), "right: " << parts[1] );
+
+			DEBUG( classname(), "eval " << getXString( nodePath + ":" + parts[0] ) );
+
+			return getXString( nodePath + attrDelim + trim(parts[0], trimCs ) ) == trim(parts[1]);
+		} else {
+			return exists( nodePath + attrDelim + trim(cond, trimCs ) );
+		}
+
+		return false;
 	}
 
 	vector<string> XmlConfig::getNodes( string nodePath ) const{
