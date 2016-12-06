@@ -123,6 +123,7 @@ namespace jdb{
 
 		bool setBinContent( string name, int bin, double content );
 		bool setBin( string name, int bin, double content, double error );
+		bool setBin( string name, int binX, int binY, double content, double error );
 		bool setBinError( string name, int bin, double error );
 		
 
@@ -193,6 +194,41 @@ namespace jdb{
 				rp += ( "\"" + i.first + "\" == (" + i.second->ClassName() + "*) " + i.second->GetTitle() + "\n");
 			}
 			return rp;
+		}
+
+		static vector< double > toArray( TH1D * h ) {
+			double * values = h->GetArray();
+			vector<double> a;
+			a.assign( values, values + h->GetSize() );
+			return a;
+		}
+
+		static vector< vector<double> > toArray( TH2D * h2 ){
+			
+			int nX = h2->GetNbinsX();
+			int nY = h2->GetNbinsY();
+			
+			vector< vector<double> > a( nX, vector<double>(nY)  );
+
+			for ( int iX = 1; iX <= nX; iX++ ){
+				for ( int iY = 1; iY <= nY; iY++ ){
+					a[iX-1][iY-1] = h2->GetBinContent( iX, iY );
+				}
+			}
+			return a;
+
+		}
+
+		static void weightByBinWidth( TH1 * _h ){
+			int nX = _h->GetNbinsX();
+			for ( int i = 1; i <= nX; i++ ){
+				double bc = _h->GetBinContent( i );
+				double bw = _h->GetBinWidth( i );
+				double be = _h->GetBinError( i );
+
+				_h->SetBinContent( i, bc / bw );
+				_h->SetBinError( i, be / bw );
+			}
 		}
 
 

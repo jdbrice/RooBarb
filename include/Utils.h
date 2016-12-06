@@ -68,6 +68,7 @@ namespace jdb{
 	 * @return the string representation of the value
 	 */
 	std::string dts( double d );
+	std::string dtes( double d, std::string p = "p" );
 
 	/* Used to properly pluralize words
 	 * @count 		the countable value

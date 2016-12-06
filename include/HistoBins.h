@@ -16,6 +16,7 @@
 #include <limits>
 #include <math.h>
 #include <unordered_map>
+#include <utility>
 using namespace std;
 
 #include "TMath.h"
@@ -389,6 +390,31 @@ namespace jdb{
 		}
 		double maximum() {
 			return max;
+		}
+
+		vector<pair< double, double> > subranges( int nWide ){
+			vector< pair<double, double>> subranges;
+			
+			for ( int i = 0; i < bins.size(); i++ ){
+				if ( i + nWide < bins.size() ){
+					subranges.push_back( make_pair( bins[i], bins[i + nWide] ) );
+				}
+			
+			}
+			return subranges;
+			
+		}
+
+		vector<pair< double, double> > subranges(){
+			vector< pair<double, double>> subranges;
+			for ( int nWide = 1; nWide < bins.size() - 1; nWide++ ){
+				for ( int i = 0; i < bins.size(); i++ ){
+					if ( i + nWide < bins.size() ){
+						subranges.push_back( make_pair( bins[i], bins[i + nWide] ) );
+					}
+				}
+			}
+			return subranges;
 		}
 
 protected:

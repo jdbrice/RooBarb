@@ -896,12 +896,15 @@ namespace jdb{
 	}
 
 	void XmlConfig::set( string nodePath, string value ) {
-
+		DEBUG( classname(), "nodePath = " << quote(nodePath) << ", value=" << quote(value) );
 		// already exists? just override
-		if ( data.count( nodePath ) )
+		if ( data.count( nodePath ) ){
 			data[ nodePath ] = value;
-		else {
+			DEBUG( classname(), "set to " << value );
+			DEBUG( classname(), "now = " << data[ nodePath ] );
+		} else {
 			add( nodePath, value );
+			DEBUG( classname(), "add" );
 		}
 	}
 
