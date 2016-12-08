@@ -493,8 +493,9 @@ namespace jdb {
 			return str.substr(0,found+1);
 		}
 
-		// 
-		void parseIncludes(  );
+		// parseInclude nodes
+		// @return 	number of includes that could not be resolved
+		int parseIncludes(  );
 
 
 		bool passConditional( string cond, string nodePath ) const;

@@ -77,7 +77,7 @@ namespace jdb{
 			return rs;
 		}
 
-		void replace_token( const XmlConfig &cfg, string &_s, string &_key, int index, int len, bool _clobber = false );
+		bool replace_token( const XmlConfig &cfg, string &_s, string &_key, int index, int len, bool _clobber = false );
 		bool replace_token( string &_s, string &_key, int index, int len, bool _clobber = false );
 
 		string format( const XmlConfig &_cfg, string _s, bool _clobber = false ) {
@@ -85,16 +85,19 @@ namespace jdb{
 			int len = -1;
 			int pos = 0;
 			string key = first_token_at( _s, index, len, pos );
+			DEBUG( classname(), "key = " << key );
 			while ( index >= 0 ){
 
 				DEBUG( classname(), "now : " << _s );
-				replace_token( _cfg, _s, key, index, len, _clobber );
+				bool replaced = replace_token( _cfg, _s, key, index, len, _clobber );
 				DEBUG( classname(), "new : " << _s );
 
 				pos = index;
+				if ( false == replaced ) pos++;
 				DEBUG( classname(), "pos = " << pos );
 				DEBUG( classname(), key );
 				key = first_token_at( _s, index, len, pos );
+				DEBUG( classname(), "key = " << key );
 			}
 			unescape(_s);
 			return _s;

@@ -66,7 +66,19 @@ namespace jdb{
 			// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
 			applyOverrides( overrides );
 
-			parseIncludes();
+			int nNotFound = parseIncludes();
+			int nTries = 0;
+			while ( nNotFound >= 1 && nTries < 1 ){
+				nTries++;
+				int nNotFoundBefore = nNotFound;
+				nNotFound = parseIncludes();
+				// check to see if we are making progress (for dependencies)
+				// if we are then don't bail out
+				if ( nNotFound < nNotFoundBefore ) nTries = 0;
+
+			}
+
+
 		} else {
 			ERROR( classname(), "Config File \"" << _filename << "\" DNE " ); 
 		}
@@ -851,8 +863,10 @@ namespace jdb{
 	}
 
 
-	void XmlConfig::parseIncludes() {
+	int XmlConfig::parseIncludes() {
 		DEBUG( classname(), "" );
+
+		int nNotFound = 0;
 		vector<string> allPaths = childrenOf( "", "Include" );
 
 		DEBUG( classname(), "Found " << allPaths.size() << " Include Tag(s)" );
@@ -880,10 +894,15 @@ namespace jdb{
 				RapidXmlWrapper rxw(  ifn  );
 #endif
 				rxw.includeMaps( pathToParent( path ), &data,  &isAttribute, &nodeExists );
+			} else {
+				WARN( classname(), "Include not found: " << ifn );
+				nNotFound++;
 			}
 
 		}
 
+
+		return nNotFound;
 	   //DEBUG( report() );
 	}
 
