@@ -78,6 +78,9 @@ namespace jdb{
 
 			}
 
+			// Apply again to really override any includes
+			applyOverrides( overrides );
+
 
 		} else {
 			ERROR( classname(), "Config File \"" << _filename << "\" DNE " ); 
