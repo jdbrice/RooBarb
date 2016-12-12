@@ -106,7 +106,7 @@ namespace jdb{
 
 
 	string XmlConfig::getString( string nodePath, string def ) const {
-
+		DEBUG( classname(), "( _nodePath=" << nodePath << ", def=" << def << ", cn=" << currentNode << ")" );
 		string snp = sanitize( currentNode + nodePath );
 		if ( nodeExists.count( snp ) >= 1 ){
 			try{
@@ -855,8 +855,8 @@ namespace jdb{
 	}
 
 	void XmlConfig::add( string nodePath, string value ){
-		DEBUG( classname(), "(" << nodePath << " = " << value << ")" );
-		nodePath = sanitize( nodePath );
+		DEBUG( classname(), "(" << nodePath << " = " << value << ", currentNode=" << currentNode << " )" );
+		nodePath = sanitize( currentNode + nodePath );
 		bool isAttr = (nodePath.find( attrDelim )!=std::string::npos);
 
 		if( isAttr )
@@ -918,12 +918,13 @@ namespace jdb{
 	}
 
 	void XmlConfig::set( string nodePath, string value ) {
-		DEBUG( classname(), "nodePath = " << quote(nodePath) << ", value=" << quote(value) );
+		DEBUG( classname(), "nodePath = " << quote(nodePath) << ", value=" << quote(value) << ", currentNode=" << currentNode << " )" );
+		string fqn = currentNode + nodePath;
 		// already exists? just override
-		if ( data.count( nodePath ) ){
-			data[ nodePath ] = value;
-			DEBUG( classname(), "set to " << value );
-			DEBUG( classname(), "now = " << data[ nodePath ] );
+		if ( data.count( fqn ) ){
+			data[ fqn ] = value;
+			DEBUG( classname(), quote(fqn) << " set to " << value );
+			DEBUG( classname(), "now = " << data[ fqn ] );
 		} else {
 			add( nodePath, value );
 			DEBUG( classname(), "add" );
