@@ -69,6 +69,13 @@ namespace jdb{
 
 		shared_ptr<TH1> getTH1() { return h1; }
 
+		virtual string toString(){
+			if ( h1 ){
+				return "XmlHistogram<name=" + quote(string(h1->GetName())) + ">";
+			}
+			return "XmlHistogram<nullptr>";
+		}
+
 		
 #ifdef __CINT__
 		ClassDef( jdb::XmlHistogram, 1 )
