@@ -98,6 +98,10 @@ namespace jdb{
 	void TreeAnalyzer::initDataSource( ){
 		
 		int _jobIndex = config.getInt( "jobIndex", -1 );
+		int _maxIndex = config.getInt( "maxJobIndex", -1 );
+		if ( _maxIndex > 0 ){
+			_jobIndex = _jobIndex%_maxIndex;
+		}
 
 		if ( !config.exists( config.join( nodePath, "input", "dst" ) ) ){
 			treeName = "";

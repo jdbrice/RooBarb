@@ -64,6 +64,15 @@ namespace jdb{
 		return trimTrailingZeros( ts( d ) );
 	}
 
+	std::string dtes( double d, string p ){
+		std::string s = dts( d );
+		std::size_t pos = s.find( "." );
+		if ( pos != std::string::npos ){
+			return s.replace( pos, 1, p );
+		}
+		return s;
+	}
+
 
 	std::string plural( double count, std::string fSingle, std::string fPlural ){
 		if ( count == 1.0 )

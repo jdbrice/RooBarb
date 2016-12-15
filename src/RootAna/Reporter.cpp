@@ -28,7 +28,7 @@ namespace jdb{
 		this->config = config;
 		this->nodePath = config.basePath( np );
 
-		this->filename = prefix + config.getString( nodePath + ".output:url" );
+		this->filename = prefix + config.getXString( nodePath + ".output:url" );
 
 		int w = config.getInt( nodePath + ".output:width", 400 );
 		int h = config.getInt( nodePath + ".output:height", 400 );

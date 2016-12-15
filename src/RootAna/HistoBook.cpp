@@ -585,6 +585,14 @@ namespace jdb{
 		return true;
 	}
 
+	bool HistoBook::setBin( string name, int binX, int binY, double content, double error ){
+		if ( !exists( name ) )
+			return false;
+		get2D( name )->SetBinContent( binX, binY, content );
+		get2D( name )->SetBinError( binX, binY, error );
+		return true;
+	}
+
 	void HistoBook::globalStyle(){
 
 		gStyle->SetCanvasColor(kWhite);     // background is no longer mouse-dropping white

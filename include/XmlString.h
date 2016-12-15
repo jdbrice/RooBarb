@@ -49,6 +49,7 @@ namespace jdb{
 		}
 
 		string first_token_at( string &s, int &index, int &len, int pos = 0 ) const {
+			DEBUG( classname(), s << ", index=" << index << ", len=" << len << ", pos=" << pos );
 			string rs = s;
 				
 			string &_tkstart = XmlString::TOKEN_START;
@@ -57,7 +58,7 @@ namespace jdb{
 			index = s.find( _tkstart, pos );
 			string test;
 			test.push_back(s[index+1]);
-			while( _tkstart == test ){
+			while( _tkstart == test && index != string::npos ){
 				int nindex = s.find( _tkstart, index+3 );
 				DEBUG( classname(), "escaped {{ @" << index );
 				if ( nindex < index ){
@@ -76,19 +77,44 @@ namespace jdb{
 			return rs;
 		}
 
-		void replace_token( const XmlConfig &cfg, string &_s, string &_key, int index, int len );
+		bool replace_token( const XmlConfig &cfg, string &_s, string &_key, int index, int len, bool _clobber = false );
+		bool replace_token( string &_s, string &_key, int index, int len, bool _clobber = false );
 
-		string format( const XmlConfig &_cfg, string _s ) {
+		string format( const XmlConfig &_cfg, string _s, bool _clobber = false ) {
+			int index = -1;
+			int len = -1;
+			int pos = 0;
+			string key = first_token_at( _s, index, len, pos );
+			DEBUG( classname(), "key = " << key );
+			while ( index >= 0 ){
+
+				DEBUG( classname(), "now : " << _s );
+				bool replaced = replace_token( _cfg, _s, key, index, len, _clobber );
+				DEBUG( classname(), "new : " << _s );
+
+				pos = index;
+				if ( false == replaced ) pos++;
+				DEBUG( classname(), "pos = " << pos );
+				DEBUG( classname(), key );
+				key = first_token_at( _s, index, len, pos );
+				DEBUG( classname(), "key = " << key );
+			}
+			unescape(_s);
+			return _s;
+		}
+
+		string format( string _s, bool _clobber = false ) {
 			int index = -1;
 			int len = -1;
 			int pos = 0;
 			string key = first_token_at( _s, index, len, pos );
 			while ( index >= 0 ){
 
-				replace_token( _cfg, _s, key, index, len );
+				bool replaced = replace_token( _s, key, index, len, _clobber );
 				DEBUG( classname(), "new : " << _s );
 
 				pos = index;
+				if ( false == replaced ) pos++;
 				DEBUG( classname(), "pos = " << pos );
 				DEBUG( classname(), key );
 				key = first_token_at( _s, index, len, pos );
