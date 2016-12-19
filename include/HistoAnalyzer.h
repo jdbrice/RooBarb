@@ -90,6 +90,12 @@ namespace jdb{
 		TH1 * get1D( string hName, string fn = "" ){
 			return (TH1*)getObj( hName, fn );
 		}
+		TH1D *getH1D( string hName, string fn = "" ){
+			return (TH1D*)getObj( hName, fn );
+		}
+		TH1F *getH1F( string hName, string fn = "" ){
+			return (TH1F*)getObj( hName, fn );
+		}
 		TH2 * get2D( string hName, string fn = "" ){
 			return (TH2*)getObj( hName, fn );
 		}
