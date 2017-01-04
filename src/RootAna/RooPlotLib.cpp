@@ -85,6 +85,10 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	// force the param name to lowercase
 	transform(option.begin(), option.end(), option.begin(), ::tolower);
 
+	// commonly used so go ahead and get them
+	// int ip0 = atoi( params[0].c_str() );
+	// int ip1 = atoi( params[1].c_str() );
+
 	// if param gives a valid color from a string then keep it for later
 	int colorFromString = color( params[ 0 ] );
 
@@ -220,6 +224,10 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		gPad->SetLogy( atoi( params[ 0 ].c_str() ) );
 	if ( "logz" == option && nullptr != gPad )
 		gPad->SetLogz( atoi( params[ 0 ].c_str() ) );
+	if ( "gridx" == option && nullptr != gPad )
+		gPad->SetGridx( atoi( params[ 0 ].c_str() ) );
+	if ( "gridy" == option && nullptr != gPad )
+		gPad->SetGridy( atoi( params[ 0 ].c_str() ) );
 
 	// GLOBAL
 	// gStyle Options
