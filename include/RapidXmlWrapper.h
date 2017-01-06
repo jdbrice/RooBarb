@@ -141,6 +141,7 @@ public:
 	}
 
 	void makeMap( xml_node<> * node, string cp, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
+		// DEBUG( "RapidXmlWrapper", "child_name" )
 
 		map< string, int > index;
 		for (xml_node<> *child = node->first_node(); child; child = child->next_sibling() ){
@@ -148,7 +149,8 @@ public:
 		    if ( "" == nodeName )
 		    	continue;
 
-		    if ( !index[ nodeName ] )
+		    // if ( !index[ nodeName ] )
+		    if ( index.count( nodeName ) <= 0 )
 				index[ nodeName ] = 0;
 
 			stringstream sstr;
@@ -167,10 +169,14 @@ public:
 
 			(*isAttribute)[ path ] = false;
 			(*exists)[ path ] = true;
+			string nValue = "";
 			if ( child->value() ){
-				(*data)[path] = trim( std::string(child->value()) );
-			} else 
-				(*data)[path] = "";
+				nValue = trim( std::string(child->value()) );
+			} 
+			// else 
+				// (*data)[path] = "";
+			// DEBUG( "RapidXmlWrapper", "["<< path << "]=<" << nValue << ">" );
+			(*data)[path] = nValue;
 
 			/**
 			 * Get attributes

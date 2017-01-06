@@ -785,8 +785,8 @@ namespace jdb{
 		string tn = tagName( nodePath );
 
 		// scrub out include tags?
-		if ( "Include" == tn )
-			return "";
+		// if ( "Include" == tn )
+		// 	return "";
 		// handle root node export:
 		if ( "" == tn || "" == nodePath )
 			tn = "config";
@@ -866,17 +866,29 @@ namespace jdb{
 	}
 
 
-	int XmlConfig::parseIncludes() {
-		DEBUG( classname(), "" );
+	int XmlConfig::unprocessedIncludes( string nodePath ){
+		vector<string> allPaths = childrenOf( nodePath, "Include" );
+		int nFound = 0;
+		for ( string path : allPaths ){
+			if ( getBool( path + ":processed" ) ) continue;
+			nFound++;
+		}
+		return nFound;
+	}
+
+	int XmlConfig::parseIncludes( string searchPath) {
+		DEBUG( classname(), " Looking for Include tags under : " << quote( searchPath ) );
 
 		int nNotFound = 0;
-		vector<string> allPaths = childrenOf( "", "Include" );
+		vector<string> allPaths = childrenOf( searchPath, "Include" );
 
 		DEBUG( classname(), "Found " << allPaths.size() << " Include Tag(s)" );
 
 		for ( string path : allPaths ){
-			DEBUG( classname(), path )
-			DEBUG( classname(), "parent path: " << pathToParent( path ) )
+			DEBUG( classname(), path );
+			DEBUG( classname(), "parent path: " << pathToParent( path ) );
+
+			if ( getBool( path + ":processed" ) ) continue;
 
 			string ifn = getXString( path + ":url" );
 			struct stat buffer;
@@ -897,6 +909,16 @@ namespace jdb{
 				RapidXmlWrapper rxw(  ifn  );
 #endif
 				rxw.includeMaps( pathToParent( path ), &data,  &isAttribute, &nodeExists );
+
+				applyOverrides( makeOverrideMap( path ) );
+
+				addAttribute( path + ":processed", "true" );
+
+				// now look for new includes and parse those
+				if ( unprocessedIncludes( pathToParent(path) ) > 0 ){
+					parseIncludes( pathToParent(path) );
+				}
+
 			} else {
 				WARN( classname(), "Include not found: " << ifn );
 				nNotFound++;
@@ -955,6 +977,7 @@ namespace jdb{
 		data[ nodePath ] = value;
 		nodeExists[ nodePath ] = true;
 	}
+
 	void XmlConfig::addAttribute( string nodePath, string value ){
 		DEBUG( classname(), "(" << nodePath << " = " << value << ")" );
 		if ( exists( nodePath ) ){
@@ -974,6 +997,47 @@ namespace jdb{
 		isAttribute[ nodePath ] = true;
 		nodeExists[ nodePath ] = true;
 
+	}
+
+	void XmlConfig::deleteNode( string nodePath ){
+		if ( !exists( nodePath ) ) return;
+
+		vector<string> paths = childrenOf( nodePath, -1, true );
+
+		// first delete children
+		for ( string path:paths ){
+			data.erase( nodePath );
+			isAttribute.erase( nodePath );
+			nodeExists.erase( nodePath );			
+		}
+
+		// now delete self
+		data.erase( nodePath );
+		isAttribute.erase( nodePath );
+		nodeExists.erase( nodePath );
+	}
+
+	map<string, string> XmlConfig::makeOverrideMap( string _nodePath ){
+
+		// all depths below and include attributes
+		vector<string> keys = childrenOf( _nodePath, -1, true );
+		map<string, string> over;
+
+		string ppath = pathToParent( _nodePath );
+
+		string sMap = "";
+		for ( string key : keys ){
+			
+			string nKey = key;
+			nKey.replace( nKey.begin(), nKey.begin() + _nodePath.length()+1, "" );
+			if ( "url" == nKey || "processed" == nKey ) continue;	// skip the url, processed since it is part of Include tag (doesnt hurt to include)
+			
+			nKey = join( ppath, nKey );
+			over[ nKey ] = getString( key );
+			sMap += "\n\t" + key + " => [ " + nKey + " ] = " + over[nKey];
+		}
+		DEBUG( classname(), sMap );
+		return over;
 	}
 
 

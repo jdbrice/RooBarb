@@ -495,15 +495,20 @@ namespace jdb {
 
 		// parseInclude nodes
 		// @return 	number of includes that could not be resolved
-		int parseIncludes(  );
-
+		int parseIncludes( string nodePath = "" );
+		int unprocessedIncludes( string nodePath = "" );
 
 		bool passConditional( string cond, string nodePath ) const;
 
 
 		// Adding content
 		void addNode( string nodePath, string value="" );
+		void deleteNode( string nodePath );
 		void addAttribute( string nodePath, string value="" );
+
+
+		// Override content from node after include when used in conjunction with applyOverrides
+		map<string, string> makeOverrideMap( string _nodePath );
 
 
 #ifdef __CINT__
