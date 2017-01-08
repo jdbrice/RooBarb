@@ -50,6 +50,12 @@
 #endif
 
 
+#define ERRORC(x) ERROR( classname(), x)
+#define WARNC(x) WARN( classname(), x)
+#define INFOC(x) INFO( classname(), x)
+#define TRACEC(x) TRACE( classname(), x)
+#define DEBUGC(x) DEBUG( classname(), x)
+
 
 #include <iostream>
 #include <string>
