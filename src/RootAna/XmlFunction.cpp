@@ -104,6 +104,10 @@ namespace jdb {
 			func->SetRange( cfg.getDouble( nodePath + ":min" ), cfg.getDouble( nodePath + ":max" ) );
 		}
 
+		if ( cfg.exists( nodePath + ":Npx" ) ){
+			func->SetNpx( cfg.getInt( nodePath + ":Npx" ) );
+		}
+
 
 
 	}

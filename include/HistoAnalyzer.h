@@ -87,6 +87,10 @@ namespace jdb{
 			return nullptr;
 		}
 
+		template <typename T>
+		T* get( string hName, string fn = "" ){
+			return (T*)getObj( hName, fn );
+		}
 		TH1 * get1D( string hName, string fn = "" ){
 			return (TH1*)getObj( hName, fn );
 		}
@@ -98,6 +102,9 @@ namespace jdb{
 		}
 		TH2 * get2D( string hName, string fn = "" ){
 			return (TH2*)getObj( hName, fn );
+		}
+		TH2 * getH2D( string hName, string fn = "" ){
+			return (TH2D*)getObj( hName, fn );
 		}
 		TH3 * get3D( string hName, string fn = "" ){
 			return (TH3*)getObj( hName, fn );
