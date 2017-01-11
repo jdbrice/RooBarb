@@ -88,8 +88,8 @@ namespace jdb{
 		}
 
 		template <typename T>
-		T* get( string hName, string fn = "" ){
-			return (T*)getObj( hName, fn );
+		T get( string hName, string fn = "" ){
+			return (T)getObj( hName, fn );
 		}
 		TH1 * get1D( string hName, string fn = "" ){
 			return (TH1*)getObj( hName, fn );
