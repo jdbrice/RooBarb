@@ -125,10 +125,18 @@ namespace jdb{
 			return false;
 		}
 
-		static string toXml( TF1 * f ) {
+		static string toXml( TF1 * f, map<string, string> _opts = {{ "", "" }} ) {
 
-			string line = "<XmlFunction ";
-			line += "formula=\"";
+			string line = "<XmlFunction";
+
+			// now add the optional attributes passed in
+			for ( auto kv : _opts ){
+				if ( "" == kv.first ) continue;
+				line += " " + kv.first + "=" + quote( kv.second );
+			}
+
+
+			line += " formula=\"";
 			line += f->GetTitle();
 			line += "\"";
 
@@ -142,6 +150,9 @@ namespace jdb{
 				line += dts(f->GetParError(ip));
 				line += "\"";
 			}
+
+			
+
 
 			line += " />";
 			return line;

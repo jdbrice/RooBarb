@@ -6,7 +6,7 @@ TaskEngine::TaskEngine( int argc, char *argv[] ){
 
 		getCmdLineConfigOverrides( argc, argv );
 		// log everything for the moment
-		Logger::setGlobalLogLevel( "all" );
+		Logger::setGlobalLogLevel( "info" );
 
 
 		if ( argc >= 2 ){
@@ -26,6 +26,7 @@ TaskEngine::TaskEngine( int argc, char *argv[] ){
 				config.loadFile( argv[1], cmdLineConfig );
 
 				Logger::setGlobalLogLevel( config.getString( "Logger:globalLogLevel" ) );
+				Logger::setGlobalColor( config.getBool( "Logger:color", false ) );
 
 				runTasks();
 			}

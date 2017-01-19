@@ -108,6 +108,10 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( nullptr != g ) ay = g->GetYaxis();
 	if ( nullptr != fn ) ax = fn->GetYaxis();
 
+	// get the z axis (TH3 only)
+	TAxis * az = nullptr;
+	if ( nullptr != h ) az = h->GetZaxis();
+
 	// set some general properties
 	if ( "title" == option || "t" == option ){
 		if ( nullptr != h ) h->SetTitle( params[0].c_str() );
@@ -212,6 +216,50 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 				opt = (bool) atoi(params[ 3 ].c_str());
 			
 			ay->SetNdivisions( n1, n2, n3, opt );
+		}
+	}
+
+	// Z-Axis
+	if ( nullptr != az ){
+		// Titl1
+		if ( ("z" == option || "ztitle" == option )  ){
+			az->SetTitle( params[ 0 ].c_str() );
+		} else if ( ("zto" == option || "ztitleoffset" == option )  ){
+			az->SetTitleOffset( atof(params[ 0 ].c_str()) );
+		}
+		else if ( ("zts" == option || "ztitlesize" == option ) ){
+			az->SetTitleSize( atof(params[ 0 ].c_str()) );
+		}
+		// Label
+		else if ( ("zlo" == option || "zlabeloffset" == option )  ){
+			az->SetLabelOffset( atof(params[ 0 ].c_str()) );
+		}
+		else if ( ("zls" == option || "zlabelsize" == option ) ){
+			az->SetLabelSize( atof(params[ 0 ].c_str()) );
+		}	
+
+		// Range
+		else if ( ("zrange" == option || "zr" == option )  ){
+			az->SetRangeUser( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+		}
+		else if ( ("zbinrange" == option || "zbr" == option )  ){
+			az->SetRange( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+		}
+
+		// n ticks
+		else if (  "zticks" == option || "ztick" == option ){
+			int n1 = atoi(params[ 0 ].c_str());
+			int n2 = 12;
+			int n3 = 0;
+			bool opt = true;
+			if ( params.size() >= 2 )
+				n2 = atoi(params[ 1 ].c_str());
+			if ( params.size() >= 3 )
+				n3 = atoi(params[ 2 ].c_str());
+			if ( params.size() >= 3 )
+				opt = (bool) atoi(params[ 3 ].c_str());
+			
+			az->SetNdivisions( n1, n2, n3, opt );
 		}
 	}
 	
