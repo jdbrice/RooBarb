@@ -49,6 +49,7 @@ namespace jdb{
 		 * _hNew is a preconstructed but empty histogram with the new binning
 		 */
 		static void rebin2D( TH2* _hOld, TH2* _hNew ){
+			if ( nullptr == _hOld || nullptr == _hNew ) return;
 			TAxis *x = _hOld->GetXaxis();
 			TAxis *y = _hOld->GetYaxis();
 
