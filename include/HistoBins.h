@@ -20,6 +20,7 @@
 using namespace std;
 
 #include "TMath.h"
+#include "TH2.h"
 
 namespace jdb{
 
@@ -41,6 +42,34 @@ namespace jdb{
 	public:
 		
 		virtual const char* classname() const { return "HistoBins"; }
+
+
+		/* General purpose Rebins for 2D histo 
+		 * _hOld is the histogram with current binning and data
+		 * _hNew is a preconstructed but empty histogram with the new binning
+		 */
+		static void rebin2D( TH2* _hOld, TH2* _hNew ){
+			TAxis *x = _hOld->GetXaxis();
+			TAxis *y = _hOld->GetYaxis();
+
+			for ( int j = 1; j <= y->GetNbins(); j++ ){
+				for ( int i = 1; i <= x->GetNbins(); i++ ) {
+					_hNew->Fill( x->GetBinCenter(i), y->GetBinCenter(j), _hOld->GetBinContent( i, j ) );
+				}
+			}
+		} //rebin2D
+
+		/* Rebins a TH2 into new bins given by HistoBins
+		 * returns the rebinned TH2*
+		 * WARNING: 	uses TH2D by default, if you want more control make the histo yourself and use above method
+		 * WARNING:		does not check for stupidity -> new bins and old bins are incompatible -> TODO: add this
+		 */
+		static TH2* rebin2D( string name, TH2* _hOld, HistoBins &_bx, HistoBins &_by ){
+			TH2D* hNew = new TH2D( name.c_str(), "", _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+			HistoBins::rebin2D( _hOld, hNew );
+			return hNew;
+		}
+
 
 		/* Makes a vector of bins with fixed width
 		 * Divides the range high - low into a fixed number of bins from low to high"
