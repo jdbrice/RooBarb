@@ -69,6 +69,69 @@ namespace jdb{
 
 	public:
 		
+		static vector<double> contentVector( TH1* _h ){
+			vector<double> c;
+			if ( _h == nullptr ) return c;
+
+			TAxis* x = _h->GetXaxis();
+			for ( int i = 1; i <= x->GetNbins(); i++ ){
+				c.push_back( _h->GetBinContent( i ) );
+			}
+			return c;
+		}
+
+		static vector<double> errorVector( TH1* _h ){
+			vector<double> c;
+			if ( _h == nullptr ) return c;
+
+			TAxis* x = _h->GetXaxis();
+			for ( int i = 1; i <= x->GetNbins(); i++ ){
+				c.push_back( _h->GetBinError( i ) );
+			}
+			return c;
+		}
+
+		static vector<double> contentVector( TH2* _h ){
+			vector<double> c;
+			if ( _h == nullptr ) return c;
+
+			TAxis* x = _h->GetXaxis();
+			TAxis* y = _h->GetYaxis();
+			for ( int j = 1; j <= y->GetNbins(); j++ ){
+				for ( int i = 1; i <= x->GetNbins(); i++ ){
+					c.push_back( _h->GetBinContent( i, j ) );
+				}
+			}
+			return c;
+		}
+
+		static vector<double> errorVector( TH2* _h ){
+			vector<double> c;
+			if ( _h == nullptr ) return c;
+
+			TAxis* x = _h->GetXaxis();
+			TAxis* y = _h->GetYaxis();
+			for ( int j = 1; j <= y->GetNbins(); j++ ){
+				for ( int i = 1; i <= x->GetNbins(); i++ ){
+					c.push_back( _h->GetBinError( i, j ) );
+				}
+			}
+			return c;
+		}
+
+		static void writeVector( TH1* _h, vector<double> _contents, vector<double> _errors = {} ){
+			if ( nullptr == _h ) return;
+			TAxis* x = _h->GetXaxis();
+			for ( int i = 1; i <= x->GetNbins(); i++ ){
+				if ( i >= _contents.size() ) break;
+				_h->SetBinContent( i, _contents[i-1] );
+				if ( i >= _errors.size() ) continue;
+				_h->SetBinError( i, _errors[i-1] );
+			}
+		}
+
+
+
 		HistoBook( string name, string input = "", string inDir = "" );		
 		HistoBook( string name, XmlConfig config, string input = "", string inDir = "");
 		~HistoBook();
@@ -96,7 +159,7 @@ namespace jdb{
 		string ls( bool print = true );
 		
 		void add( string name, TH1 * );
-		void addClone( string name, TH1 * );
+		TH1* addClone( string name, TH1 * );
 		void add( string name, TObject* );
 		void addClone( string name, TObject * );
 		TH1* get( string name, string sdir = "UNSET_PATH" );

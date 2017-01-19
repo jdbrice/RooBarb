@@ -215,8 +215,11 @@ namespace jdb{
 		//add( name, (TObject*)h );
 	} 	// add
 
-	void HistoBook::addClone( string name, TH1 * h ){
-		add( name, (TH1*)h->Clone( name.c_str() ) );
+	TH1* HistoBook::addClone( string name, TH1 * h ){
+		if ( nullptr == h ) return ( new TH1C( "ERROR", "E", 1, 0, 1 ) );
+		TH1 * clone = (TH1*)h->Clone( name.c_str() );
+		add( name, clone );
+		return clone;
 	}
 
 	void HistoBook::add( string name, TObject* h ){
