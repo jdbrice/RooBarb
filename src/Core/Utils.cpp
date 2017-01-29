@@ -131,6 +131,15 @@ namespace jdb{
 	std::string quote( std::string str ){
 		return "\"" + str + "\"";
 	}
+	std::string quote( int i ){
+		return quote( ts(i) );
+	}
+	std::string quote( double d ){
+		return quote( ts(d) );
+	}
+	std::string quote( float f ){
+		return quote( ts(f) );
+	}
 
 	/**
 	 * Plain text progress bar that only updates when it needs to

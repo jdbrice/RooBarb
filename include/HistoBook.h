@@ -130,6 +130,25 @@ namespace jdb{
 			}
 		}
 
+		static void writeVector( TH2* _h, vector<double> _contents, vector<double> _errors = {} ){
+			if ( nullptr == _h ) return;
+			TAxis* x = _h->GetXaxis();
+			TAxis* y = _h->GetYaxis();
+
+			int Nbx = x->GetNbins();
+			int Nby = y->GetNbins();
+			for ( int j = 1; j <= Nby; j++ ){
+				for ( int i = 1; i <= Nbx; i++ ){
+					int iBin = _h->GetBin( i, j );
+					int iData = i-1 + Nbx * (j-1); 
+					if ( iData < _contents.size() )
+						_h->SetBinContent( iBin, _contents[iData] );
+					if ( iData < _errors.size() )
+						_h->SetBinError( iBin, _errors[iData] );
+				}
+			}
+		}
+
 
 
 		HistoBook( string name, string input = "", string inDir = "" );		

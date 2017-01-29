@@ -127,6 +127,9 @@ namespace jdb{
 	std::string indentation( int count, std::string tab="\t" );
 
 	std::string quote( std::string str );
+	std::string quote( int str );
+	std::string quote( double str );
+	std::string quote( float str );
 
 
 	/* Task Timer

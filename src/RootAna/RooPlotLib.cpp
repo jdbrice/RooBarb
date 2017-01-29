@@ -3,6 +3,7 @@
 
 //#include "TROOT.h" 
 #include "TStyle.h"
+#include "TColor.h"
 
 #ifdef __CINT__
 ClassImp( jdb::RooPlotLib );
@@ -426,6 +427,10 @@ int jdb::RooPlotLib::color( string color ) {
 		return kBlue;
 	if ( "black" == color )
 		return kBlack;
+
+	if ( color[0] == '#' && color.size() == 7 ){
+		return TColor::GetColor( color.c_str() );
+	}
 	return -1;
 }
 
