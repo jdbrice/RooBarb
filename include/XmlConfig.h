@@ -73,6 +73,8 @@ namespace jdb {
 		// Current node for relative path finding
 		string currentNode = "";
 
+		string lastNode = "";
+
 		// shared_ptr<XmlString> xStr = nullptr;
 	public:
 		virtual const char* classname() const { return "XmlConfig";}
@@ -127,16 +129,25 @@ namespace jdb {
 		 * @return 		Current Node before changing
 		 */
 		string cn( string nodePath = "" ){
-			string tCN = currentNode;
+			if ( currentNode == nodePath ) return lastNode;
+			string lastNode = currentNode;
 			currentNode = nodePath;
-			return tCN;
+			return lastNode;
+		}
+
+		string back(){
+			string tmp = currentNode;
+			currentNode = lastNode;
+			lastNode = tmp;
+			return currentNode;
 		}
 
 		/* Same as getString(...) but with the [] operator.
 		 * @nodePath See getString(...)
 		 * @returns The underlying xml data at nodePath as a string
 		 */
-		string operator[]( string nodePath ) const;
+		string operator[]( string nodePath ) const; 
+
 
 		/* Set operator
 		 * Usage:
@@ -167,6 +178,10 @@ namespace jdb {
 		   @return The underlying xml data at nodePath as a string
 		 */
 		string getString( string nodePath, string def = "" ) const;
+
+		string getString( string prefix, vector<string> paths, string def = "" ) const;
+
+
 
 		/* Gets an String processed via XmlString
 		 *
@@ -244,6 +259,7 @@ namespace jdb {
 		 * @return vector of doubles, one for each item in the comma delimeted list
 		 */
 		vector<double> getDoubleVector( string nodePath, double defaultVal = 0, int defaultLength = 0 ) const;
+		vector<float> getFloatVector( string nodePath, float defaultVal = 0, int defaultLength = 0 ) const;
 
 		/* Gets a node or attribute as foat type
 		 * @nodePath Path to node. See getString(...)
@@ -271,6 +287,9 @@ namespace jdb {
 		 * @return **True** - node or attribute is found. **False** otherwise
 		 */
 		bool exists( string nodePath ) const;
+
+		string oneOf( vector<string> _paths );
+		string oneOf( string _p1, string _p2, string _p3 = "", string _p4 = "" );
 
 		/* Lists the children of a node
 		 * @nodePath Path to node. See getString(...)
@@ -465,14 +484,14 @@ namespace jdb {
 
 		void add( string nodePath, string value="" );
 
-
+		// Sanatizes node paths
+		string sanitize( string nodePath ) const;
 
 	protected:
 
 		// A manual case lowing function
 		string manualToLower( string str ) const;
-		// Sanatizes node paths
-		string sanitize( string nodePath ) const;
+		
 		// Gets a vector from comma delimeted strings
 		vector<string> vectorFromString( string data ) const;
 		// Splits strings using the given delim character

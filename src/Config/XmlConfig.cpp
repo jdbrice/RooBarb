@@ -118,8 +118,28 @@ namespace jdb{
 		return def;
 	}
 
+
+	string XmlConfig::getString( string _prefix, vector<string> _paths, string _def ) const {
+		for ( auto pp : _paths ){
+			string p = _prefix + pp;
+			if ( exists( p ) ){
+				return getXString( p, _def );
+			}
+		}
+		return _def;
+	}
+
 	string XmlConfig::getXString( string nodePath, string def ) const {
 		string raw = getString( nodePath, def );
+		DEBUGC( "raw = " << raw );
+
+		if ( '@' == raw[0] ){
+			raw = raw.substr( 1 );
+			raw = XmlString().format( (*this), raw );
+			DEBUGC( "SYMLINK : " << raw );
+			return getXString( raw, def );
+		}
+
 		return XmlString().format( (*this), raw );
 	}
 
@@ -235,6 +255,23 @@ namespace jdb{
 		return d;
 	}
 
+	vector<float> XmlConfig::getFloatVector( string nodePath, float defaultVal, int defaultLength ) const{
+		
+		vector<float> d;
+		// default if node does not exist
+		if ( !exists( nodePath ) ){
+			for ( int i = 0; i < defaultLength; i++ )
+				d.push_back( defaultVal );
+			return d;
+		}
+
+		vector<string> vec = getStringVector( nodePath );
+		for ( unsigned int i = 0; i < vec.size(); i++  ){
+			d.push_back( atof( vec[ i ].c_str() ) );
+		}
+		return d;
+	}
+
 	float XmlConfig::getFloat( string nodePath, float def  ) const{
 		return (float) getDouble( nodePath, (double)def );
 	}
@@ -271,6 +308,17 @@ namespace jdb{
 			return false;
 		}
 		return false;
+	}
+
+	string XmlConfig::oneOf( vector<string> _paths ){
+		for ( string p : _paths ){
+			if ( "" == p ) continue;
+			if ( exists( p ) ) return p;
+		}
+		return "";
+	}
+	string XmlConfig::oneOf( string _p1, string _p2, string _p3, string _p4 ){
+		return oneOf( {_p1, _p2, _p3, _p4} );
 	}
 
 	string XmlConfig::sanitize( string nodePath ) const{

@@ -93,7 +93,7 @@ public:
         vector<string> paths = cfg->childrenOf( np, "Canvas" );
         for ( string path : paths  ){
 
-            shared_ptr<XmlCanvas> can = shared_ptr<XmlCanvas>( new XmlCanvas( cfg, path ) );
+            shared_ptr<XmlCanvas> can = shared_ptr<XmlCanvas>( new XmlCanvas( (*cfg), path ) );
             if ( can->getName() != "" ) {
                 TRACE( can->getName() << " Created" )
                 canvas[can->getName()] = can;

@@ -4,6 +4,7 @@
 //#include "TROOT.h" 
 #include "TStyle.h"
 #include "TColor.h"
+#include "TGaxis.h"
 
 #ifdef __CINT__
 ClassImp( jdb::RooPlotLib );
@@ -83,6 +84,24 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		return *this;
 	}
 
+	string p0 = "", p1 = "", p2 = "", p3 = "", p4 = "";
+	if ( params.size() >= 1 ) p0 = params[0];
+	if ( params.size() >= 2 ) p1 = params[1];
+	if ( params.size() >= 3 ) p2 = params[2];
+	if ( params.size() >= 4 ) p3 = params[3];
+	if ( params.size() >= 5 ) p4 = params[4];
+	float fp0 = atof( p0.c_str());
+	float fp1 = atof( p1.c_str());
+	float fp2 = atof( p2.c_str());
+	float fp3 = atof( p3.c_str());
+	float fp4 = atof( p4.c_str());
+
+	int ip0 = atoi( p0.c_str());
+	int ip1 = atoi( p1.c_str());
+	int ip2 = atoi( p2.c_str());
+	int ip3 = atoi( p3.c_str());
+	int ip4 = atoi( p4.c_str());
+
 	// force the param name to lowercase
 	transform(option.begin(), option.end(), option.begin(), ::tolower);
 
@@ -91,7 +110,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	// int ip1 = atoi( params[1].c_str() );
 
 	// if param gives a valid color from a string then keep it for later
-	int colorFromString = color( params[ 0 ] );
+	int colorFromString = color( p0 );
 
 	TH1 * h 	= dynamic_cast<TH1*>(styling);
 	TGraph * g 	= dynamic_cast<TGraph*>(styling);
@@ -115,63 +134,70 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 
 	// set some general properties
 	if ( "title" == option || "t" == option ){
-		if ( nullptr != h ) h->SetTitle( params[0].c_str() );
-		if ( nullptr != g ) g->SetTitle( params[0].c_str() );
-		if ( nullptr != fn ) fn->SetTitle( params[0].c_str() );
+		if ( nullptr != h ) h->SetTitle( p0.c_str() );
+		if ( nullptr != g ) g->SetTitle( p0.c_str() );
+		if ( nullptr != fn ) fn->SetTitle( p0.c_str() );
 	}
 	// TODO: not really working
 	if ( "titlesize" == option || "ts" == option ){
-		INFO( classname(), option << " " << params[0] );
-		gStyle->SetTitleFontSize( atof(params[0].c_str()) );
-		// if ( nullptr != h ) h->SetTitleSize( atof(params[0].c_str()) );
-		//if ( nullptr != g ) g->SetTitleSize( params[0].c_str() ); These don't exist?
-		//if ( nullptr != fn ) fn->SetTitleSize( params[0].c_str() );
+		INFO( classname(), option << " " << p0 );
+		gStyle->SetTitleFontSize( fp0 );
 	}
 	if ( "draw" == option ){
-		drawOption = params[ 0 ];
+		drawOption = p0;
+	}
+	if ( "norm" == option ){
+		drawNorm = true;
+	} else {
+		drawNorm = false;
+	}
+
+
+	if ( "axisdigits" == option ){
+		TGaxis::SetMaxDigits( ip0 );
 	}
 
 	// Axis Stuff
 	// X-Axis
 	if ( nullptr != ax ){
 		if ( ("x" == option || "xtitle" == option) ){
-			ax->SetTitle( params[ 0 ].c_str() );
+			ax->SetTitle( p0.c_str() );
 		}
 		else if ( ("xto" == option || "xtitleoffset" == option ) ){
-			ax->SetTitleOffset( atof(params[ 0 ].c_str()) );
+			ax->SetTitleOffset( fp0 );
 		}
 		else if ( ("xts" == option || "xtitlesize" == option ) ){
-			ax->SetTitleSize( atof(params[ 0 ].c_str()) );
+			ax->SetTitleSize( fp0 );
 		}
 		// Label
 		else if ( ("xlo" == option || "xlabeloffset" == option )  ){
-			ax->SetLabelOffset( atof(params[ 0 ].c_str()) );
+			ax->SetLabelOffset( fp0 );
 		}
 		else if ( ("xls" == option || "xlabelsize" == option ) ){
-			ax->SetLabelSize( atof(params[ 0 ].c_str()) );
+			ax->SetLabelSize( fp0 );
 		}
 	
 
 		// Range
 		if ( ("xrange" == option || "xr" == option )  ){
-			ax->SetRangeUser( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			ax->SetRangeUser( fp0, fp1 );
 		}
 		if ( ("xbinrange" == option || "xbr" == option )  ){
-			ax->SetRange( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			ax->SetRange( fp0, fp1 );
 		}
 
 		// n ticks
 		else if (  "xticks" == option || "xtick" == option ){
-			int n1 = atoi(params[ 0 ].c_str());
+			int n1 = ip0;
 			int n2 = 12;
 			int n3 = 0;
 			bool opt = true;
 			if ( params.size() >= 2 )
-				n2 = atoi(params[ 1 ].c_str());
+				n2 = ip1;
 			if ( params.size() >= 3 )
-				n3 = atoi(params[ 2 ].c_str());
+				n3 = ip2;
 			if ( params.size() >= 3 )
-				opt = (bool) atoi(params[ 3 ].c_str());
+				opt = (bool) ip3;
 			
 			ax->SetNdivisions( n1, n2, n3, opt );
 		}
@@ -180,41 +206,41 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( nullptr != ay ){
 		// Titl1
 		if ( ("y" == option || "ytitle" == option )  ){
-			ay->SetTitle( params[ 0 ].c_str() );
+			ay->SetTitle( p0.c_str() );
 		} else if ( ("yto" == option || "ytitleoffset" == option )  ){
-			ay->SetTitleOffset( atof(params[ 0 ].c_str()) );
+			ay->SetTitleOffset( fp0 );
 		}
 		else if ( ("yts" == option || "ytitlesize" == option ) ){
-			ay->SetTitleSize( atof(params[ 0 ].c_str()) );
+			ay->SetTitleSize( fp0 );
 		}
 		// Label
 		else if ( ("ylo" == option || "ylabeloffset" == option )  ){
-			ay->SetLabelOffset( atof(params[ 0 ].c_str()) );
+			ay->SetLabelOffset( fp0 );
 		}
 		else if ( ("yls" == option || "ylabelsize" == option ) ){
-			ay->SetLabelSize( atof(params[ 0 ].c_str()) );
+			ay->SetLabelSize( fp0 );
 		}	
 
 		// Range
 		else if ( ("yrange" == option || "yr" == option )  ){
-			ay->SetRangeUser( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			ay->SetRangeUser( fp0, fp1 );
 		}
 		else if ( ("ybinrange" == option || "ybr" == option )  ){
-			ay->SetRange( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			ay->SetRange( fp0, fp1 );
 		}
 
 		// n ticks
 		else if (  "yticks" == option || "ytick" == option ){
-			int n1 = atoi(params[ 0 ].c_str());
+			int n1 = ip0;
 			int n2 = 12;
 			int n3 = 0;
 			bool opt = true;
 			if ( params.size() >= 2 )
-				n2 = atoi(params[ 1 ].c_str());
+				n2 = ip1;
 			if ( params.size() >= 3 )
-				n3 = atoi(params[ 2 ].c_str());
+				n3 = ip2;
 			if ( params.size() >= 3 )
-				opt = (bool) atoi(params[ 3 ].c_str());
+				opt = (bool) ip3;
 			
 			ay->SetNdivisions( n1, n2, n3, opt );
 		}
@@ -224,41 +250,41 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( nullptr != az ){
 		// Titl1
 		if ( ("z" == option || "ztitle" == option )  ){
-			az->SetTitle( params[ 0 ].c_str() );
+			az->SetTitle( p0.c_str() );
 		} else if ( ("zto" == option || "ztitleoffset" == option )  ){
-			az->SetTitleOffset( atof(params[ 0 ].c_str()) );
+			az->SetTitleOffset( fp0 );
 		}
 		else if ( ("zts" == option || "ztitlesize" == option ) ){
-			az->SetTitleSize( atof(params[ 0 ].c_str()) );
+			az->SetTitleSize( fp0 );
 		}
 		// Label
 		else if ( ("zlo" == option || "zlabeloffset" == option )  ){
-			az->SetLabelOffset( atof(params[ 0 ].c_str()) );
+			az->SetLabelOffset( fp0 );
 		}
 		else if ( ("zls" == option || "zlabelsize" == option ) ){
-			az->SetLabelSize( atof(params[ 0 ].c_str()) );
+			az->SetLabelSize( fp0 );
 		}	
 
 		// Range
 		else if ( ("zrange" == option || "zr" == option )  ){
-			az->SetRangeUser( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			az->SetRangeUser( fp0, fp1 );
 		}
 		else if ( ("zbinrange" == option || "zbr" == option )  ){
-			az->SetRange( atof(params[ 0 ].c_str()), atof(params[ 1 ].c_str()) );
+			az->SetRange( fp0, fp1 );
 		}
 
 		// n ticks
 		else if (  "zticks" == option || "ztick" == option ){
-			int n1 = atoi(params[ 0 ].c_str());
+			int n1 = ip0;
 			int n2 = 12;
 			int n3 = 0;
 			bool opt = true;
 			if ( params.size() >= 2 )
-				n2 = atoi(params[ 1 ].c_str());
+				n2 = ip1;
 			if ( params.size() >= 3 )
-				n3 = atoi(params[ 2 ].c_str());
+				n3 = ip2;
 			if ( params.size() >= 3 )
-				opt = (bool) atoi(params[ 3 ].c_str());
+				opt = (bool) ip3;
 			
 			az->SetNdivisions( n1, n2, n3, opt );
 		}
@@ -268,23 +294,23 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	// SEMI - GLOBAL
 	// gPad Options
 	if ( "logx" == option && nullptr != gPad )
-		gPad->SetLogx( atoi( params[ 0 ].c_str() ) );
+		gPad->SetLogx( ip0 );
 	if ( "logy" == option && nullptr != gPad )
-		gPad->SetLogy( atoi( params[ 0 ].c_str() ) );
+		gPad->SetLogy( ip0 );
 	if ( "logz" == option && nullptr != gPad )
-		gPad->SetLogz( atoi( params[ 0 ].c_str() ) );
+		gPad->SetLogz( ip0 );
 	if ( "gridx" == option && nullptr != gPad )
-		gPad->SetGridx( atoi( params[ 0 ].c_str() ) );
+		gPad->SetGridx( ip0 );
 	if ( "gridy" == option && nullptr != gPad )
-		gPad->SetGridy( atoi( params[ 0 ].c_str() ) );
+		gPad->SetGridy( ip0 );
 
 	// GLOBAL
 	// gStyle Options
 	if ( "stats" == option || "stat" == option || "optstat" == option){
-		gStyle->SetOptStat( atoi( params[ 0 ].c_str() ) );
+		gStyle->SetOptStat( ip0 );
 	}
 	if ( "fitbox" == option || "fit" == option || "optfit" == option){
-		gStyle->SetOptFit( atoi( params[ 0 ].c_str() ) );
+		gStyle->SetOptFit( ip0 );
 	}
 
 
@@ -293,7 +319,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( line ){
 		if ( "linecolor" == option || "lc" == option 
 			|| "color" == option || "c" == option  ){
-			int c = atoi( params[ 0 ].c_str() );
+			int c = ip0;
 			if ( colorFromString >= 0 )
 				c = colorFromString;
 			DEBUG( classname(), "LC COLOR=" << c );
@@ -301,10 +327,10 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 
 		}
 		if ( "linewidth" == option || "lw" == option){
-			line->SetLineWidth( atof( params[ 0 ].c_str() ) );
+			line->SetLineWidth( atof( p0.c_str() ) );
 		}
 		if ("linestyle" == option || "lst" == option ){
-			line->SetLineStyle( atoi( params[ 0 ].c_str() ) );
+			line->SetLineStyle( ip0 );
 		}
 	}
 
@@ -313,23 +339,23 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( fill ){
 		if ( "fillcolor" == option || "fc" == option 
 			|| "color" == option || "c" == option ){
-			int c = atoi( params[ 0 ].c_str() );
+			int c = ip0;
 			if ( colorFromString >= 0 )
 				c = colorFromString;
 			DEBUG( classname(), "FC COLOR=" << c );
 			fill->SetFillColor( c );
 		}
 		if ( "fillcoloralpha" == option || "fca" == option ){
-			int c = atoi( params[ 0 ].c_str() );
+			int c = ip0;
 			if ( colorFromString >= 0 )
 				c = colorFromString;
 				DEBUG( classname(), "FCA COLOR=" << c );
-#if ROOT6 > 0
-			if ( "" != params[ 1 ] ){
+	#if ROOT6 > 0
+			if ( "" != p1 ){
 				if ( nullptr != h )
-					h->SetFillColorAlpha( c, atof( params[ 1 ].c_str() ) );
+					h->SetFillColorAlpha( c, fp1 );
 				if ( nullptr != g )
-					g->SetFillColorAlpha( c, atof( params[ 1 ].c_str() ) );
+					g->SetFillColorAlpha( c, fp1 );
 			}
 			else { 
 				if ( nullptr != h )
@@ -337,18 +363,18 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 				if ( nullptr != g )
 					g->SetFillColor( c );
 			}
-#else
+	#else
 			if ( nullptr != h )
 					h->SetFillColor( c );
 				if ( nullptr != g )
 					g->SetFillColor( c );
-#endif
+	#endif
 
 
 
 		}
 		if ( "fillstyle" == option || "fst" == option){
-			fill->SetFillStyle( atoi( params[ 0 ].c_str() ) );
+			fill->SetFillStyle( ip0 );
 		}
 	}
 
@@ -358,17 +384,17 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		
 		if ( "markercolor" == option || "mc" == option 
 			|| "color" == option || "c" == option ){
-			int c = atoi( params[ 0 ].c_str() );
+			int c = ip0;
 			if ( colorFromString >= 0 )
 				c = colorFromString;
 			DEBUG( classname(), "MC COLOR=" << c );
 			marker->SetMarkerColor( c );
 		}
 		if ( "markersize" == option || "ms" == option ){
-			marker->SetMarkerSize( atoi( params[ 0 ].c_str() ) );
+			marker->SetMarkerSize( fp0 );
 		}
 		if ( "markerstyle" == option || "mst" == option){
-			marker->SetMarkerStyle( atoi( params[ 0 ].c_str() ) );
+			marker->SetMarkerStyle( ip0 );
 		}
 	}
 
@@ -409,7 +435,10 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 		return *this;
 	}
 
-	styling->Draw( drawOption.c_str() );
+	if ( true == drawNorm && static_cast<TH1*>( styling ) )
+		static_cast<TH1*>( styling )->DrawNormalized( drawOption.c_str() );
+	else 
+		styling->DrawClone( drawOption.c_str() );
 	return *this;
 }
 

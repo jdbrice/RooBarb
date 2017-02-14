@@ -344,8 +344,37 @@ namespace jdb{
 				return;
 			}
 			
-			
 			TRACE( classname(), "Could not make HistoBins @ " << _nodePath );
+		}
+
+
+		/* Linspace
+		 *
+		 * min, max, N
+		 */
+		void linspace( XmlConfig &_c, string _path = "" ){
+			vector<float> ls = _c.getFloatVector( _path );
+			if ( ls.size() == 3 ){
+				INFOC( "LinSpace (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
+				bins = makeNBins( ls[2], ls[0], ls[1] );
+				min = bins[ 0 ];
+				max = bins[ nBins() ];
+			}
+			return;
+		}
+
+		/* arange
+		 *
+		 * min, max, step
+		 */
+		void arange( XmlConfig &_c, string _path = "" ){
+			vector<float> ls = _c.getFloatVector( _path );
+			if ( ls.size() == 3 ){
+				INFOC( "arange (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
+				bins = makeFixedWidthBins( ls[2], ls[0], ls[1] );
+				min = bins[ 0 ];
+				max = bins[ nBins() ];
+			}
 		}
 
 

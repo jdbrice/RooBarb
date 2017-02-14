@@ -16,6 +16,8 @@
 #pragma link C++ class jdb::XmlConfig+;
 #pragma link C++ class jdb::XmlString+;
 #pragma link C++ class jdb::XmlBinnedData+;
+#pragma link C++ class jdb::XmlPad+;
+#pragma link C++ class jdb::XmlCanvas+;
 
 #pragma link C++ class jdb::LoggerConfig-;
 #pragma link C++ class jdb::TaskTimer-;

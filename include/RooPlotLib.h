@@ -41,6 +41,7 @@ namespace jdb{
 	    //string type = "";
 	    TObject * styling = nullptr;
 	    string drawOption = "";
+	    bool drawNorm     = false;
 
 	    bool validObject( TObject * obj );
 
