@@ -105,7 +105,7 @@ namespace jdb{
 	}
 
 
-	string XmlConfig::getString( string nodePath, string def ) const {
+	string XmlConfig::getRawString( string nodePath, string def ) const {
 		DEBUG( classname(), "( _nodePath=" << nodePath << ", def=" << def << ", cn=" << currentNode << ")" );
 		string snp = sanitize( currentNode + nodePath );
 		if ( nodeExists.count( snp ) >= 1 ){
@@ -116,6 +116,10 @@ namespace jdb{
 			}
 		}
 		return def;
+	}
+
+	string XmlConfig::getString( string nodePath, string def ) const {
+		return getXString(nodePath, def);
 	}
 
 
@@ -130,7 +134,7 @@ namespace jdb{
 	}
 
 	string XmlConfig::getXString( string nodePath, string def ) const {
-		string raw = getString( nodePath, def );
+		string raw = getRawString( nodePath, def );
 		DEBUGC( "raw = " << raw );
 
 		if ( '@' == raw[0] ){

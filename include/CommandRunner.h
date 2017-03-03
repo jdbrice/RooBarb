@@ -33,8 +33,15 @@ namespace jdb {
 			INFO( classname(), "COMMAND : " << config.getXString( nodePath + ".command" ) );
 			INFO( classname(), "executing" );
 
-			// do it here
-			system( config.getXString( nodePath + ".command" ).c_str() );
+			vector<string> cmds = config.childrenOf( nodePath, "command" );
+			INFOC( "Found " << cmds.size() << plural( cmds.size(), " command", " commands" ) );
+
+			for ( string pcmd : cmds ){
+				INFOC( "Executing: " << quote( config.getXString( pcmd ) ) );
+				// do it here
+				system( config.getXString( pcmd ).c_str() );
+			}
+			
 
 			INFO( classname(), "Completed" );
 		}

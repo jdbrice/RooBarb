@@ -177,6 +177,8 @@ namespace jdb {
 		   
 		   @return The underlying xml data at nodePath as a string
 		 */
+		string getRawString( string nodePath, string def = "" ) const;
+
 		string getString( string nodePath, string def = "" ) const;
 
 		string getString( string prefix, vector<string> paths, string def = "" ) const;

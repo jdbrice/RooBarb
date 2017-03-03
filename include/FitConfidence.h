@@ -5,6 +5,7 @@
 #include "TF1.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
 #include "TMatrixDSym.h"
 #include "TFitResult.h"
 #include "TRandom.h"
@@ -46,6 +47,18 @@ namespace jdb {
 		 * @return 	TH1 * for region of confidence 
 		 */
 		static TH1 * fitCL( TF1 * f, string name, double cl = 0.95, int nPoints = 100, double x1 = -1.0, double x2 = -1.0 );
+
+
+		/* Draws a flat uncertainty band around a function
+		 *
+		 * @f 			Function to draw
+		 * @nPoints 	Number of points in graph, default = 100
+		 # @e_up        Error in pos Y
+		 # @e_low       Error in neg Y
+		 * @x1 			low range of function
+		 * @x2 			high range of function, if x1 == x2 == -1 then the fit range is used
+		 */
+		static TGraphAsymmErrors * fitUncertaintyBand( TF1* f, double e_up, double e_low, int nPoints, double x1 = -1.0, double x2 = -1.0 );
 
 		/* Computes the Cholesky parameters for the given function
 		 * @nP 			Number of parameters

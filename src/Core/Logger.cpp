@@ -7,6 +7,8 @@ ClassImp( jdb::Logger );
 namespace jdb {
 	int Logger::llGlobal = Logger::llDefault;	
 	bool Logger::showColors = false;
+	bool Logger::timeStamp = true;
+	string Logger::timeFormat = "%Y-%m-%d %H:%M:%S";
 	Logger Logger::log;
 
 	void Logger::setGlobalLogLevel( int ll ){
@@ -25,4 +27,12 @@ namespace jdb {
 		Logger::showColors = state;
 	}
 	bool Logger::getGlobalColor( ) { return Logger::showColors; }
+
+	void Logger::showTimeStamp( bool show ){
+		Logger::timeStamp = show;
+	}
+
+	void Logger::setTimeFormat( string fmt ){
+		Logger::timeFormat = fmt;
+	}
 }

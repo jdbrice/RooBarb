@@ -62,6 +62,7 @@
 #include <iomanip>
 #include <map>
 #include <algorithm>
+#include <time.h>
 using namespace std;
 
 #include "ANSIColors.h"
@@ -117,6 +118,9 @@ namespace jdb {
 		// The global log level - used by any newly created log IF not overridden
 		static int llGlobal;
 
+		static bool timeStamp;
+		static string timeFormat;
+
 		/*
 		 * Gets the global log level for all Logger instances
 		 */
@@ -131,6 +135,9 @@ namespace jdb {
 		static void setGlobalColor( bool state = true );
 		static bool getGlobalColor( );
 		static bool showColors;
+
+		static void showTimeStamp( bool show = true );
+		static void setTimeFormat( string fmt = "%Y-%m-%d %H:%M:%S" );
 
 		//Singelton Instance
 		static Logger log;
@@ -345,13 +352,43 @@ namespace jdb {
 				coloredLevel = ANSIColors::color( level, "yellow" );
 				// coloredLevel = "\033[1;33m" + level + "\033[0;m";
 
+			if (timeStamp){
+
+			}
+
 			int w1 = 8;
-			if ( cSpace.length() >= 2 && functionName.length() >= 2 )
-				(*os) << std::left << std::setw(w1) << coloredLevel << " : " << "[" << cSpace << "." << functionName << "] ";
-			else if (cSpace.length() < 2 && functionName.length() >= 2)
-				(*os) << std::left << std::setw(w1) << coloredLevel << " : " << "[" << functionName << "] ";
-			else if ( coloredLevel.length() >= 1 )
-				(*os) << "" << std::left << std::setw(w1) << coloredLevel << " : ";
+
+			string context = "[" + cSpace + "." + functionName + "] ";
+			if ( cSpace.length() < 2 && functionName.length() >= 2 )
+				context = "[" + functionName + "] ";
+			else if ( cSpace.length() < 2 && functionName.length() < 2 )
+				context = " ";
+
+
+			(*os) << std::left;
+
+			if (timeStamp){
+				char buff[20];
+				struct tm *sTm;
+
+				time_t now = time (0);
+				sTm = gmtime (&now);
+
+				strftime (buff, sizeof(buff), timeFormat.c_str(), sTm);
+				(*os) << buff << " ";
+			} else {
+			}
+
+
+			(*os) << std::left << std::setw(w1) << coloredLevel << " :";
+			(*os) << " " << context;
+
+			// if ( cSpace.length() >= 2 && functionName.length() >= 2 )
+			// 	(*os) << std::left << std::setw(w1) << coloredLevel << " : " << "[" << cSpace << "." << functionName << "] ";
+			// else if (cSpace.length() < 2 && functionName.length() >= 2)
+			// 	(*os) << std::left << std::setw(w1) << coloredLevel << " : " << "[" << functionName << "] ";
+			// else if ( coloredLevel.length() >= 1 )
+			// 	(*os) << "" << std::left << std::setw(w1) << coloredLevel << " : ";
 
 			
 			if ( !counts[ tag ] )

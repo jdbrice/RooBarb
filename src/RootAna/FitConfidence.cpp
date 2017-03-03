@@ -20,6 +20,28 @@ namespace jdb{
 		return hCL;
 	}
 
+	TGraphAsymmErrors * FitConfidence::fitUncertaintyBand( TF1* f, double e_high, double e_low, int nPoints, double x1, double x2 ){
+		// calculate instead
+		if ( -1.0 == x1  && -1.0 == x2 )
+			f->GetRange( x1, x2 );
+		INFO( FitConfidence::classname(), "Range (" << x1 <<", " << x2 << " )" );
+		if ( nPoints < 2 )
+			nPoints = 100;
+		INFO( FitConfidence::classname(), "Plotting with " << nPoints << plural( nPoints, " point", " points" ) );
+		TGraphAsymmErrors *g = new TGraphAsymmErrors( nPoints );
+
+		float step = (x2 - x1) / (float)nPoints;
+		for ( int i = 0; i < nPoints; i++ ){
+			float x = step * (i+1);
+			float y = f->Eval( x );
+
+			g->SetPoint( i, x, y );
+			g->SetPointEYlow( i, e_low );
+			g->SetPointEYhigh( i, e_high );
+		}
+		return g;
+	}
+
 	void FitConfidence::calcCholesky( int nP, double * fCov, double* fCovSqrt ){
 
 		double *C = fCovSqrt;

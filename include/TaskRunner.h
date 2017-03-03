@@ -25,8 +25,11 @@ namespace jdb {
 			// makes sure it is in the right form
 			// not ending in '.' or ':attribute' etc.
 			this->nodePath = this->config.basePath( _nodePath );
-			Logger::setGlobalLogLevel( config.getString( nodePath + ".Logger:globalLogLevel", "info" ) );
-			Logger::setGlobalColor( config.getBool( nodePath + ".Logger:color", false ) );
+			// Logger::setGlobalLogLevel( config.getString( nodePath + ".Logger:globalLogLevel", "info" ) );
+			// Logger::setGlobalColor( config.getBool( nodePath + ".Logger:color", false ) );
+			LoggerConfig::configLogger( config, nodePath + ".Logger" );
+
+
 			overrideConfig();
 		}
 

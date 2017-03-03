@@ -44,10 +44,12 @@ void TaskEngine::runTasks(){
 
 	for ( string p : paths ){
 
-		string _name = config[ p + ":name" ];
-		string _type = config[ p + ":type" ];
+		string _name       = config[ p + ":name" ];
+		string _type       = config[ p + ":type" ];
 		string _configFile = config[ p + ":config" ];
-		string _nodePath = config[ p + ":nodePath" ];
+		string _nodePath   = config[ p + ":nodePath" ];
+		vector<string> _extraArgs  = config.getStringVector( p + ":args" );
+
 
 		XmlConfig _taskConfig;
 
@@ -85,20 +87,38 @@ void TaskEngine::runTasks(){
 	}// loop on task paths
 }// runTasks
 
+void TaskEngine::getOverrideFromString( string s, string &path, string &value ){
+	if ( 0 == s.compare( 0, 2, "--" ) ){
+		vector<string> parts = split( s, '=' );
+		if ( parts.size() <= 1 ) return;
+
+		path = parts[0].substr( 2 );
+		value = parts[1];
+	}
+	return;
+}
+
 void TaskEngine::getCmdLineConfigOverrides( int argc, char * argv[] ){
 	
 	for ( int i = 0; i < argc; i++ ){
 		string v = argv[ i ];
-		if ( 0 == v.compare( 0, 2, "--" ) ){
-			
-			vector<string> parts = split( v, '=' );
-			if ( parts.size() <= 1 ) continue;
-
-			string path = parts[0].substr( 2 );
-			string value = parts[1];
-
+		string path = "";
+		string value = "";
+		
+		getOverrideFromString( v, path, value );
+		if ( path != "" )
 			cmdLineConfig[ path ] = value;
-		} // check that it starts with "--"
+
+		// if ( 0 == v.compare( 0, 2, "--" ) ){
+			
+		// 	vector<string> parts = split( v, '=' );
+		// 	if ( parts.size() <= 1 ) continue;
+
+		// 	string path = parts[0].substr( 2 );
+		// 	string value = parts[1];
+
+		// 	cmdLineConfig[ path ] = value;
+		// } // check that it starts with "--"
 	} // loop over argc
 } // getCmdLineConfigOverrides
 

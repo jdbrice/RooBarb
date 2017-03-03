@@ -43,7 +43,7 @@ void jdb::RooPlotLib::link( shared_ptr<HistoBook> book ){
 }
 
 RooPlotLib & jdb::RooPlotLib::style( TObject * obj) {
-    DEBUG(classname(), "( " << obj << " )")
+    DEBUG(classname(), "( " << obj << ", name=" << obj->GetName() << " )")
     styling = obj;
 
     if ( cfgForDefaultStyle != nullptr ){ 
@@ -150,6 +150,12 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		drawNorm = true;
 	} else {
 		drawNorm = false;
+	}
+
+	if ( "clone" == option ){
+		drawClone = true;
+	} else {
+		drawClone = false;
 	}
 
 
@@ -437,8 +443,11 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 
 	if ( true == drawNorm && static_cast<TH1*>( styling ) )
 		static_cast<TH1*>( styling )->DrawNormalized( drawOption.c_str() );
-	else 
+	else if ( true == drawClone )
 		styling->DrawClone( drawOption.c_str() );
+	else 
+		styling->Draw( drawOption.c_str() );
+
 	return *this;
 }
 

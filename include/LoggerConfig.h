@@ -67,6 +67,16 @@ namespace jdb{
 				Logger::setGlobalColor( true );
 		}
 
+
+
+		static void configLogger( XmlConfig &config, string nodePath ) {
+			Logger::setGlobalLogLevel( Logger::logLevelFromString( config.getString( nodePath+":globalLogLevel", "debug" ) ) );
+			Logger::setGlobalColor( config.getBool( nodePath+":color", false ) );
+			Logger::showTimeStamp( config.getBool( nodePath+":timeStamp", true ) );
+			Logger::setTimeFormat( config.getString( nodePath + ":timeFormat", Logger::timeFormat ) );
+			INFO( "LoggerConfig", "Configured Logger from " << config.getFilename() << ", path=" << nodePath );
+		}
+
 	};
 
 }
