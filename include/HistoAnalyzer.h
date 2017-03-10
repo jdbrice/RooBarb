@@ -60,12 +60,29 @@ namespace jdb{
 		 */
 		~HistoAnalyzer();
 
+		bool fileExists( string name ){
+			if ( rootFiles.count( name ) > 0 && rootFiles[ name ] != nullptr && rootFiles[ name ]->IsOpen() )
+				return true;
+			return false;
+		}
 		void setCurrentFile( string name ){
 			if ( rootFiles.count( name ) > 0 ){
 				inFile = rootFiles[ name ];
 			} else {
 				ERROR( classname(), "No file named " << name << " available" );
 			}
+		}
+
+		unsigned int numberOfFiles(){
+			return rootFiles.size();
+		}
+
+		vector<string> filenames(){
+			vector<string> names;
+			for ( auto kv : rootFiles ){
+				names.push_back( kv.first );
+			}
+			return names;
 		}
 
 		void addRootFile( string filename, string name = "" ){

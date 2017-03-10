@@ -150,6 +150,67 @@ namespace jdb{
 		}
 
 
+		static TH1* cloneBinRange( TH1 *_h, string name, int bX1=0, int bX2 = -1 ){
+			if (nullptr == _h ) return nullptr;
+			TH1 * hClone = (TH1*)_h->Clone( name.c_str() );
+			TAxis * x = _h->GetXaxis();
+			int b1 = bX1;
+			if ( b1 < 0 ) b1 = 0;
+			int b2 = bX2;
+			if (b2 > x->GetNbins() + 1 || -1 == b2) b2 = x->GetNbins() + 1;
+
+			hClone->Reset();
+
+			for ( int iB = b1; iB < b2; iB++ ){
+				hClone->SetBinContent( iB, _h->GetBinContent( iB ) );
+				hClone->SetBinError( iB, _h->GetBinError( iB ) );
+			}
+			return hClone;
+		}
+
+		static TH1* cloneRange( TH1 *_h, string name, float x1=0, float x2 = -1 ){
+			if (nullptr == _h ) return nullptr;
+			TAxis * x = _h->GetXaxis();
+			int b1 = x->FindBin( x1 );
+			int b2 = x->FindBin( x2 );
+
+			return cloneBinRange( _h, name, b1, b2 );
+		}
+
+		static TH1* cloneBinRange( TH1 *_hFrom, TH1* _hTo, int bX1=0, int bX2 = -1 ){
+			if (nullptr == _hFrom || nullptr == _hTo) return nullptr;
+			TAxis * x = _hFrom->GetXaxis();
+			int b1 = bX1;
+			if ( b1 < 0 ) b1 = 0;
+			int b2 = bX2;
+			if (b2 > x->GetNbins() + 1 || -1 == b2) b2 = x->GetNbins() + 1;
+
+			for ( int iB = b1; iB < b2; iB++ ){
+				_hTo->SetBinContent( iB, _hFrom->GetBinContent( iB ) );
+				_hTo->SetBinError( iB, _hFrom->GetBinError( iB ) );
+			}
+		}
+		static TH1* cloneRange( TH1 *_hFrom, TH1* _hTo, float x1=0, float x2 = -1 ){
+			if (nullptr == _hFrom || nullptr == _hTo ) return nullptr;
+			TAxis * x = _hFrom->GetXaxis();
+			int b1 = x->FindBin( x1 );
+			int b2 = x->FindBin( x2 );
+
+			return cloneBinRange( _hFrom, _hTo, b1, b2 );
+		}
+
+		static TH1* relativeErrors( TH1* _h, string name ){
+			if ( nullptr == _h ) return nullptr;
+			TH1* hre = (TH1*)_h->Clone( name.c_str() );
+			hre->Reset();
+			for ( int ib = 1; ib < _h->GetXaxis()->GetNbins()+1; ib++ ){
+				if ( 0 < _h->GetBinContent( ib ) )
+					hre->SetBinContent( ib, _h->GetBinError( ib ) / _h->GetBinContent( ib ) );
+			}
+			return hre;
+		}
+
+
 
 		HistoBook( string name, string input = "", string inDir = "" );		
 		HistoBook( string name, XmlConfig config, string input = "", string inDir = "");

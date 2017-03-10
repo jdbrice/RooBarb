@@ -353,7 +353,7 @@ namespace jdb{
 		 * min, max, N
 		 */
 		void linspace( XmlConfig &_c, string _path = "" ){
-			vector<float> ls = _c.getFloatVector( _path );
+			vector<double> ls = _c.getDoubleVector( _path );
 			if ( ls.size() == 3 ){
 				INFOC( "LinSpace (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
 				bins = makeNBins( ls[2], ls[0], ls[1] );
@@ -368,7 +368,7 @@ namespace jdb{
 		 * min, max, step
 		 */
 		void arange( XmlConfig &_c, string _path = "" ){
-			vector<float> ls = _c.getFloatVector( _path );
+			vector<double> ls = _c.getDoubleVector( _path );
 			if ( ls.size() == 3 ){
 				INFOC( "arange (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
 				bins = makeFixedWidthBins( ls[2], ls[0], ls[1] );
