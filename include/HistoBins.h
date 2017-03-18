@@ -357,8 +357,8 @@ namespace jdb{
 			if ( ls.size() == 3 ){
 				INFOC( "LinSpace (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
 				bins = makeNBins( ls[2], ls[0], ls[1] );
-				min = bins[ 0 ];
-				max = bins[ nBins() ];
+				min = ls[0];
+				max = ls[1];
 			}
 			return;
 		}
@@ -372,8 +372,8 @@ namespace jdb{
 			if ( ls.size() == 3 ){
 				INFOC( "arange (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
 				bins = makeFixedWidthBins( ls[2], ls[0], ls[1] );
-				min = bins[ 0 ];
-				max = bins[ nBins() ];
+				min = ls[ 0 ];
+				max = ls[ 1 ];
 			}
 		}
 
