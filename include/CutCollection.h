@@ -41,7 +41,7 @@ namespace jdb{
 
 		// Map that holds range cuts
 		map< string, shared_ptr<XmlRange> > ranges;
-
+		shared_ptr<XmlRange> empty;
 
 		/* Find out if a named range exists
 		 *
@@ -62,9 +62,17 @@ namespace jdb{
 				return ranges[ name ];
 
 			ERROR( classname(), name << " DNE" );
-			return nullptr;
+			return empty;
 		} // operator[]
 
+
+		vector<string> names(){
+			vector<string> vnames;
+			for ( auto k : ranges ){
+				vnames.push_back( k.first );
+			}
+			return vnames;
+		}
 
 		/* Reports the cut names and ranges
 		 *
