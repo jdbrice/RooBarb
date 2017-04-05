@@ -31,6 +31,8 @@ namespace jdb {
 
 
 			overrideConfig();
+
+			init();
 		}
 
 		/* This is where you should set up your task

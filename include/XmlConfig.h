@@ -393,7 +393,7 @@ namespace jdb {
 		 *
 		 * @return the tag name of the node pointed to by nodePath
 		 */
-		string tagName( string nodePath ) const;
+		string tagName( string nodePath, int atDepth = -1 ) const;
 
 		/* Get the path to the parent of this node
 		 * @nodePath Path to node. See getString(...)
@@ -405,6 +405,8 @@ namespace jdb {
 		 * @return the path to the parent of given node
 		 */
 		string pathToParent( string nodePath ) const;
+		string pathToDepth( string nodePath, int depth ) const;
+
 
 		/* Gets the base path from a node path
 		 * @nodePath Path to node. See getString(...)
@@ -518,8 +520,14 @@ namespace jdb {
 		// @return 	number of includes that could not be resolved
 		int parseIncludes( string nodePath = "" );
 		int unprocessedIncludes( string nodePath = "" );
+		void merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists );
+		bool conflictExists( map<string, string> *_data, string &shortestConflict );
 
 		bool passConditional( string cond, string nodePath ) const;
+
+		int numberOf( string _path );
+		string incrementPath( string _in, int _n = 1);
+		int pathIndex( string _in );
 
 
 		// Adding content
@@ -530,6 +538,23 @@ namespace jdb {
 
 		// Override content from node after include when used in conjunction with applyOverrides
 		map<string, string> makeOverrideMap( string _nodePath );
+
+
+
+		string stripIndex( string _in ) const{
+			vector<string> byIndex = split( _in, indexOpenDelim[0] );
+			return byIndex[0];
+		}
+
+		string stripAttribute( string _in ) const{
+			vector<string> attr = split( _in, attrDelim );
+			if ( attr.size() >= 2 ){
+				return _in.substr( 0, _in.length() - attr[1].length() + 1 );
+			}
+			return _in;
+		}
+
+
 
 
 #ifdef __CINT__

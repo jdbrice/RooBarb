@@ -437,21 +437,49 @@ namespace jdb{
 		}
 		return "";
 	}
-	string XmlConfig::tagName( string nodePath ) const{
-		vector<string> ntf = split( nodePath, pathDelim );
-		vector<string> attr = split( nodePath, attrDelim );
-		if ( attr.size() >= 2 ){
-			ntf[ ntf.size() - 1 ] = ntf[ ntf.size() - 1 ].substr( 0, ntf[ ntf.size() - 1 ].length() - (attr[ 1].length() + 1) );
-		}
-		if ( ntf.size() >= 1 ){
-			vector<string> byIndex = split( ntf[ ntf.size() - 1 ], indexOpenDelim[0] );
-			if ( byIndex.size() >= 2 ){
-				return byIndex[ 0 ];
-			}
 
-			return ntf[ ntf.size() - 1 ];
+	string XmlConfig::pathToDepth( string nodePath, int depth ) const {
+		vector<string> ntf = split( nodePath, pathDelim );
+		if ( ntf.size() >= 1 ){
+			string fullPath ="";
+			for ( unsigned int i = 0; i < ntf.size(); i++ ){
+				if ( i > depth ) break;
+				fullPath += (ntf[ i ] + pathDelim );
+			}
+			
+			return basePath( fullPath );
 		}
 		return "";
+	}
+
+
+
+
+
+	string XmlConfig::tagName( string nodePath, int atDepth ) const{
+		
+		if ( atDepth < 0 ){
+			vector<string> ntf = split( nodePath, pathDelim );
+			vector<string> attr = split( nodePath, attrDelim );
+			if ( attr.size() >= 2 ){
+				ntf[ ntf.size() - 1 ] = ntf[ ntf.size() - 1 ].substr( 0, ntf[ ntf.size() - 1 ].length() - (attr[ 1].length() + 1) );
+			}
+			if ( ntf.size() >= 1 ){
+				vector<string> byIndex = split( ntf[ ntf.size() - 1 ], indexOpenDelim[0] );
+				if ( byIndex.size() >= 2 ){
+					return byIndex[ 0 ];
+				}
+
+				return ntf[ ntf.size() - 1 ];
+			}
+			return "";
+		} else {
+
+			vector<string> ntf = split( nodePath, pathDelim );
+			if (atDepth >= ntf.size() )
+				atDepth = ntf.size()-1;
+			return stripIndex( stripAttribute( ntf[atDepth] ) );
+		}
 	}
 	string XmlConfig::attributeName( string nodePath ) const {
 		vector<string> ntf = split( nodePath, pathDelim );
@@ -960,7 +988,14 @@ namespace jdb{
 #ifndef __CINT__
 				RapidXmlWrapper rxw(  ifn  );
 #endif
-				rxw.includeMaps( pathToParent( path ), &data,  &isAttribute, &nodeExists );
+
+				map<string, string> tmpData;
+				map<string, bool> tmpIsAttribute;
+				map<string, bool> tmpNodeExists;
+				
+				rxw.includeMaps( pathToParent( path ), &tmpData,  &tmpIsAttribute, &tmpNodeExists );
+				merge( &tmpData,  &tmpIsAttribute, &tmpNodeExists );
+
 
 				applyOverrides( makeOverrideMap( path ) );
 
@@ -982,6 +1017,155 @@ namespace jdb{
 		return nNotFound;
 	   //DEBUG( report() );
 	}
+
+	bool XmlConfig::conflictExists( map<string, string> *_data, string &shortestConflict ){
+		bool conflicts = false;
+		for ( auto kv : *_data ){
+			if ( this->data.count( kv.first ) >= 1 ){
+				if ( false == conflicts )
+					shortestConflict = kv.first;
+				else if ( kv.first.length() < shortestConflict.length() ){
+					shortestConflict = kv.first;
+				}
+				conflicts = true;
+			}
+		} // loop on _data
+		// shortestConflict = shortestConflict + pathDelim;
+		return conflicts;
+	}
+
+	void XmlConfig::merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists ){
+
+
+		string shortestConflict = "";
+		bool conflicts = conflictExists( _data, shortestConflict );
+		int cDepth = depthOf( shortestConflict);
+
+		cout << "Depth of conflict (" << shortestConflict <<") = " << depthOf( shortestConflict) << endl;
+
+		if ( conflicts ){
+
+			map<string, string> _d;
+			map<string, bool> _ia;
+			map<string, bool> _e;
+			cout << "Shortest conflicting path : " << quote( shortestConflict ) << " === " << sanitize(shortestConflict)  << endl;
+
+			vector<string> toDelete;
+			vector<string> toAdd;
+
+			for ( auto kv : *_data ){
+				
+				string str = kv.first; // eg "Path" should not match "Path[1]"
+				
+				if ( str.find( shortestConflict ) == string::npos ) {
+					// _d[ str ] = (*_data)[ kv.first ];
+					// _ia[ str ] = (*_isAttribute)[ kv.first ];
+					// _e[ str ] = (*_exists)[ kv.first ];
+					continue;
+				}
+
+				string ptr = pathToDepth( kv.first, cDepth );
+				string npp = incrementPath( pathToDepth( kv.first, cDepth ) );
+
+				//cout << str <<  "==>" << pathToDepth( kv.first, cDepth ) << ", replace with " << incrementPath( pathToDepth( kv.first, cDepth ) ) << endl;
+				
+				string::size_type index = 0;
+				index = str.find( ptr, index);
+
+				if ( index != string::npos ){
+					/* Make the replacement. */
+					str.replace(index, ptr.length(), npp );
+					cout << "[REPLACE] " << ptr << ", with " << npp << " = " << str << endl;
+
+					_d[ str ] = (*_data)[ kv.first ];
+					_ia[ str ] = (*_isAttribute)[ kv.first ];
+					_e[ str ] = (*_exists)[ kv.first ];
+
+					toDelete.push_back( kv.first );
+				}
+			}
+
+			(*_data) = _d;
+			(*_isAttribute) = _ia;
+			(*_exists) = _e;
+
+			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
+			// 	cout << "COPY[data]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_data)[toDelete[i]] << endl;
+			// 	(*_data)[ toAdd[i] ] = (*_data)[ toDelete[i] ];
+			// 	_data->erase( toDelete[i] );
+			// }
+
+			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
+			// 	cout << "COPY[isAttribute]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_isAttribute)[toDelete[i]] << endl;
+			// 	(*_isAttribute)[ toAdd[i] ] = (*_isAttribute)[ toDelete[i] ];
+			// 	_isAttribute->erase( toDelete[i] );
+			// }
+
+			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
+			// 	cout << "COPY[exists]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_exists)[toDelete[i]] << endl;
+			// 	(*_exists)[ toAdd[i] ] = (*_exists)[ toDelete[i] ];
+			// 	_exists->erase( toDelete[i] );
+			// }
+
+			conflicts = false;
+		}
+
+		if ( !conflicts ){
+			cout << "MERGING, No conflicts" << endl;
+			for ( auto kv : *_data ){
+				this->data[ kv.first ] = kv.second;
+			}
+			for ( auto kv : *_isAttribute ){
+				this->isAttribute[ kv.first ] = kv.second;
+			}
+			for ( auto kv : *_exists ){
+				this->nodeExists[ kv.first ] = kv.second;
+			}
+		} else {
+
+
+			// cout << "IncrementPath: " << incrementPath( shortestConflict ) << endl;
+			// cout << "Path[1] --> " << incrementPath( "Path[1]" ) << endl;
+			// cout << "Path[2] --> " << incrementPath( "Path[2]" ) << endl;
+			// cout << "Path[5] --> " << incrementPath( "Path[5]" ) << endl;
+		}
+	}
+
+	int XmlConfig::numberOf( string _path ){
+		int n = 0;
+		cout << "Input : " << quote( _path ) << endl;
+		string sstr = join( pathToParent( _path ), tagName( _path ) );
+		cout << "Searching for # of " << sstr << endl;
+		//assuming they are in order
+		while ( true ){
+			if ( !exists( sstr + indexOpenDelim[0] + ts( n ) + indexCloseDelim[0] ) ) break;
+			n++;
+		}
+		return n;
+	}
+	string XmlConfig::incrementPath( string _in, int _n ){
+		string base = basePath( _in );
+		vector<string> byIndex = split( _in, indexOpenDelim[0] );
+		if ( byIndex.size() >= 2 ){
+			base = byIndex[0];
+		}
+
+		return base + indexOpenDelim + ts( pathIndex( _in )+_n ) + indexCloseDelim;
+	}
+
+	int XmlConfig::pathIndex( string _in ){
+		string::size_type first = _in.find(indexOpenDelim[0]);
+		string::size_type last  = _in.find(indexCloseDelim[0]);
+		// cout << "first = " << first << endl;
+		// cout << "last = " << last << endl;
+		if ( string::npos == first || string::npos == last ) return 0;
+
+		string between = _in.substr(first+1,last-first-1);
+		// cout << "substring = " << between << endl;
+		return atoi( between.c_str() );
+	}
+
+
 
 	void XmlConfig::applyOverrides( map< string, string > over ) {
 		DEBUG( classname(), "Applying Overrides" );
@@ -1072,10 +1256,14 @@ namespace jdb{
 	map<string, string> XmlConfig::makeOverrideMap( string _nodePath ){
 
 		// all depths below and include attributes
-		vector<string> keys = childrenOf( _nodePath, -1, true );
+		vector<string> keys = childrenOf( _nodePath + ".", -1, true );
 		map<string, string> over;
 
 		string ppath = pathToParent( _nodePath );
+
+		DEBUGC( "key = " << vts( keys ) );
+		DEBUGC( "ppath = " << quote( ppath ) );
+		DEBUGC( "# of children " << keys.size() );
 
 		string sMap = "";
 		for ( string key : keys ){
@@ -1088,7 +1276,7 @@ namespace jdb{
 			over[ nKey ] = getString( key );
 			sMap += "\n\t" + key + " => [ " + nKey + " ] = " + over[nKey];
 		}
-		DEBUG( classname(), sMap );
+		DEBUGC( sMap );
 		return over;
 	}
 
