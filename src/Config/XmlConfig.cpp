@@ -1018,9 +1018,9 @@ namespace jdb{
 			}
 
 			if ( exists ){
-#ifndef __CINT__
+				#ifndef __CINT__
 				RapidXmlWrapper rxw(  ifn  );
-#endif
+				#endif
 
 				map<string, string> tmpData;
 				map<string, bool> tmpIsAttribute;
@@ -1052,53 +1052,59 @@ namespace jdb{
 	}
 
 	bool XmlConfig::conflictExists( map<string, string> *_data, string &shortestConflict ){
+		
 		bool conflicts = false;
 		for ( auto kv : *_data ){
 			if ( this->data.count( kv.first ) >= 1 ){
-				if ( false == conflicts )
+				if ( false == conflicts && pathIndex( kv.first ) >= 0){
+					
 					shortestConflict = kv.first;
-				else if ( kv.first.length() < shortestConflict.length() ){
+				}
+				else if ( kv.first.length() < shortestConflict.length() && pathIndex( kv.first ) >= 0 ){
+					
 					shortestConflict = kv.first;
 				}
 				conflicts = true;
 			}
 		} // loop on _data
-		// shortestConflict = shortestConflict + pathDelim;
+		shortestConflict = stripIndex( shortestConflict );
 		return conflicts;
 	}
 
 	void XmlConfig::merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists ){
 
 
+		
+
+
 		string shortestConflict = "";
 		bool conflicts = conflictExists( _data, shortestConflict );
 
-		int cDepth = depthOf( shortestConflict);
-
-		cout << "Depth of conflict (" << shortestConflict <<") = " << depthOf( shortestConflict) << endl;
-
-		if ( conflicts ){
-
+		while( conflicts ){
 			map<string, string> _d;
 			map<string, bool> _ia;
 			map<string, bool> _e;
-			cout << "Shortest conflicting path : " << quote( shortestConflict ) << " === " << sanitize(shortestConflict)  << endl;
 
-			vector<string> toDelete;
-			vector<string> toAdd;
+			int cDepth = depthOf( shortestConflict );
+			int incBy = numberOf( shortestConflict );
+			if ( incBy <= 0 ) incBy = 1;
+			// cout << "Depth of conflict (" << quote(shortestConflict) <<") = " << depthOf( shortestConflict) << endl;
+			// cout << "increment by " << incBy << endl;
 
 			for ( auto kv : *_data ){
-				
 				string str = kv.first;
 				
 				// no conflict here
 				if ( str.find( shortestConflict ) == string::npos ) {
-					cout << "[NO CONFLICT] " << str << " with " << shortestConflict << endl;
+					// cout << "[NO CONFLICT] " << str << " with " << shortestConflict << endl;
+					_d[ str ] = (*_data)[ kv.first ];
+					_ia[ str ] = (*_isAttribute)[ kv.first ];
+					_e[ str ] = (*_exists)[ kv.first ];
 					continue;
 				}
 
-				string ptr = pathToDepth( kv.first, cDepth );
-				string npp = incrementPath( pathToDepth( kv.first, cDepth ) );
+				string ptr = pathToDepth( str, cDepth );
+				string npp = incrementPath( pathToDepth( str, cDepth ), incBy );
 				
 				string::size_type index = 0;
 				index = str.find( ptr, index);
@@ -1111,65 +1117,35 @@ namespace jdb{
 					_d[ str ] = (*_data)[ kv.first ];
 					_ia[ str ] = (*_isAttribute)[ kv.first ];
 					_e[ str ] = (*_exists)[ kv.first ];
-
-					toDelete.push_back( kv.first );
 				}
 			}
 
+			// replace existing
 			(*_data) = _d;
 			(*_isAttribute) = _ia;
 			(*_exists) = _e;
 
-			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
-			// 	cout << "COPY[data]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_data)[toDelete[i]] << endl;
-			// 	(*_data)[ toAdd[i] ] = (*_data)[ toDelete[i] ];
-			// 	_data->erase( toDelete[i] );
-			// }
+			conflicts = conflictExists( _data, shortestConflict );
+		} // while
 
-			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
-			// 	cout << "COPY[isAttribute]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_isAttribute)[toDelete[i]] << endl;
-			// 	(*_isAttribute)[ toAdd[i] ] = (*_isAttribute)[ toDelete[i] ];
-			// 	_isAttribute->erase( toDelete[i] );
-			// }
-
-			// for ( int i = toDelete.size() - 1; i >= 0; i-- ){
-			// 	cout << "COPY[exists]: " << toDelete[i] << " ==> " << toAdd[i] << " value = " << (*_exists)[toDelete[i]] << endl;
-			// 	(*_exists)[ toAdd[i] ] = (*_exists)[ toDelete[i] ];
-			// 	_exists->erase( toDelete[i] );
-			// }
-
-			conflicts = false;
+		for ( auto kv : *_data ){
+			this->data[ kv.first ] = kv.second;
+		}
+		for ( auto kv : *_isAttribute ){
+			this->isAttribute[ kv.first ] = kv.second;
+		}
+		for ( auto kv : *_exists ){
+			this->nodeExists[ kv.first ] = kv.second;
 		}
 
-		if ( !conflicts ){
-			cout << "MERGING, No conflicts" << endl;
-			for ( auto kv : *_data ){
-				this->data[ kv.first ] = kv.second;
-			}
-			for ( auto kv : *_isAttribute ){
-				this->isAttribute[ kv.first ] = kv.second;
-			}
-			for ( auto kv : *_exists ){
-				this->nodeExists[ kv.first ] = kv.second;
-			}
-		} else {
-
-
-			// cout << "IncrementPath: " << incrementPath( shortestConflict ) << endl;
-			// cout << "Path[1] --> " << incrementPath( "Path[1]" ) << endl;
-			// cout << "Path[2] --> " << incrementPath( "Path[2]" ) << endl;
-			// cout << "Path[5] --> " << incrementPath( "Path[5]" ) << endl;
-		}
 	}
 
 	int XmlConfig::numberOf( string _path ){
 		int n = 0;
-		cout << "Input : " << quote( _path ) << endl;
-		string sstr = join( pathToParent( _path ), tagName( _path ) );
-		cout << "Searching for # of " << sstr << endl;
+		string sstr = stripIndex( _path );
 		//assuming they are in order
 		while ( true ){
-			if ( !exists( sstr + indexOpenDelim[0] + ts( n ) + indexCloseDelim[0] ) ) break;
+			if ( !exists( addIndex( sstr, n ) ) ) break;
 			n++;
 		}
 		return n;
