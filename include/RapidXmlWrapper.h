@@ -162,7 +162,7 @@ public:
 			else 
 				path += nodeName;
 			
-			if ( index[ nodeName ] >= 1 )
+			if ( index[ nodeName ] >= 0 )
 				path += indexOpenDelim + sstr.str() + indexCloseDelim;
 
 			index[ nodeName ]++;

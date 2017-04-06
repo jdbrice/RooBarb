@@ -106,7 +106,6 @@ namespace jdb{
 
 
 	string XmlConfig::getRawString( string nodePath, string def ) const {
-		DEBUG( classname(), "( _nodePath=" << nodePath << ", def=" << def << ", cn=" << currentNode << ")" );
 		string snp = sanitize( currentNode + nodePath );
 		if ( nodeExists.count( snp ) >= 1 ){
 			try{
@@ -135,15 +134,11 @@ namespace jdb{
 
 	string XmlConfig::getXString( string nodePath, string def ) const {
 		string raw = getRawString( nodePath, def );
-		DEBUGC( "raw = " << raw );
-
 		if ( '@' == raw[0] ){
 			raw = raw.substr( 1 );
 			raw = XmlString().format( (*this), raw );
-			DEBUGC( "SYMLINK : " << raw );
 			return getXString( raw, def );
 		}
-
 		return XmlString().format( (*this), raw );
 	}
 
@@ -327,28 +322,41 @@ namespace jdb{
 
 	string XmlConfig::sanitize( string nodePath ) const{
 
+		/*************************************************/
 		// TODO
 		// make the cn option applied here so everything uses it.
 		// currently childrenOf does not work with it
-		/**
-		 * Remove internal whitespaces
-		 */
+
+		/*************************************************/
+		// Remove internal whitespaces
 		string ret = "";
 		for ( unsigned int i = 0; i < nodePath.length(); i++ ){
 			if ( nodePath[i] != ' ' )
 				ret += (char)nodePath[ i ];
 		}
 
-		/**
-		 * Remove [0] since they are found by leaving it off
-		 */
-		string rString = indexOpenDelim+"0"+indexCloseDelim;
-		size_t found = ret.find(rString);
-		while( found != string::npos ){
-			//cout << "Period found at: " << found << '\n';
-			ret.erase( found, rString.length() );
-			found = ret.find(rString);
+		/*************************************************/
+		// Add [0] to unindexed paths
+		string attr = attributeName( ret );
+		vector<string> parts = split( stripAttribute( ret ), pathDelim );
+
+		int i = 0;
+		ret = "";
+		for ( string p : parts ){
+			string np = p;
+			if ( -1 == pathIndex( p ) ){
+				np = addIndex( p );
+			}
+			ret += np;
+			i++;
+			if ( i < parts.size() )
+				ret += pathDelim;
 		}
+
+		/*************************************************/
+		// Add back the attribute if it was there
+		if ( attr.length() >= 1 )
+			ret += attrDelim + attr;
 
 		return ret;
 	}
@@ -452,10 +460,6 @@ namespace jdb{
 		return "";
 	}
 
-
-
-
-
 	string XmlConfig::tagName( string nodePath, int atDepth ) const{
 		
 		if ( atDepth < 0 ){
@@ -481,48 +485,35 @@ namespace jdb{
 			return stripIndex( stripAttribute( ntf[atDepth] ) );
 		}
 	}
-	string XmlConfig::attributeName( string nodePath ) const {
-		vector<string> ntf = split( nodePath, pathDelim );
-		vector<string> attr = split( nodePath, attrDelim );
-		if ( attr.size() >= 2 ){
-			return attr[ attr.size() - 1 ];
-		}
-		
-		return "";
-	}
 
 	vector<string> XmlConfig::childrenOf( string nodePath, int relDepth, bool attrs ) const {
 
-		
 		nodePath = sanitize( nodePath );
-		// if ( 	nodePath[ nodePath.length() - 1] != pathDelim && 
-		// 		nodePath[ nodePath.length() - 1] != attrDelim  && "" != nodePath )
-		// 	nodePath += pathDelim;
 	
 		int npDepth = depthOf( nodePath );
-		cout << "[childrenOf] nodePath = " << nodePath << ", " << npDepth << endl;  
+		
 
 		vector<string> paths;
 		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+			const string &key = it->first; 
+			// reject self
+			if ( key == nodePath )
+				continue;
 
-			size_t found = it->first.find( attrDelim );
+			string::size_type found = key.find( attrDelim );
 			if ( found != string::npos && false == attrs )
 				continue;
 			
-			// reject self
-			if ( it->first == nodePath )
-				continue;
-			
-			string parent = (it->first).substr( 0, nodePath.length() );
+			string parent = (key).substr( 0, nodePath.length() );
 			if ( nodePath == parent ){
 				
 				if ( -1 == relDepth ) 
-					paths.push_back( it->first );
+					paths.push_back( key );
 				else {
-					int dp = depthOf( it->first );
+					int dp = depthOf( key );
 
 					if ( dp - npDepth > 0 && dp - npDepth <= relDepth ) 
-						paths.push_back( it->first );
+						paths.push_back( key );
 				}
 			}
 		}
@@ -609,7 +600,7 @@ namespace jdb{
 		return ret;
     }
 
-    string XmlConfig::join( std::initializer_list<string> paths ) const {
+    string XmlConfig::join( std::vector<string> paths ) const {
     	if ( paths.size() == 1 ){
     		WARN( classname(), "Only one path given, returning unaltered" );
     		for ( string p : paths ){
@@ -647,7 +638,27 @@ namespace jdb{
     }
 
 	vector< string > XmlConfig::attributesOf( string nodePath ) const{
-		return childrenOf( nodePath + attrDelim, -1, true );
+		nodePath = sanitize( nodePath ) + attrDelim;
+
+		vector<string> paths;
+		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+			const string &key = it->first; 
+			// reject self
+			if ( key == nodePath )
+				continue;
+
+			// look for attribute delimeter
+			string::size_type found = key.find( attrDelim );
+			if ( found == string::npos )
+				continue;
+			
+			// push back the paths
+			string parent = (key).substr( 0, nodePath.length() );
+			if ( nodePath == parent ){
+				paths.push_back( key );
+			}
+		}
+		return paths;
 	}
 
 	map<string, string> XmlConfig::attributesMap( string nodePath ) const{
@@ -865,8 +876,8 @@ namespace jdb{
 		nodePath   = basePath( nodePath );
 		string tn  = tagName( nodePath );
 
-		cout << ind << "basePath = " << nodePath << endl;
-		cout << ind << "tagName = " << tn << endl;
+		// cout << ind << "basePath = " << nodePath << endl;
+		// cout << ind << "tagName = " << tn << endl;
 
 		// scrub out include tags?
 		// if ( "Include" == tn )
@@ -875,23 +886,14 @@ namespace jdb{
 		if ( "" == tn || "" == nodePath ) 
 			tn = "config";
 
-		string snp = nodePath + pathDelim;
-		if ( pathDelim == snp[0] )
-			snp = "";
-		cout << ind << "ScopedNodePath = " << snp << endl;
-
 		string content = getString( nodePath );
-		vector<string> children = childrenOf( snp, 1 );
-		cout << ind << snp << " has " << children.size() << " children" << endl;
+		vector<string> children = childrenOf( nodePath, 1 );
 		DEBUG( classname(), tn << " has " << children.size() << " children" );
-		string childrens = "";
+		string childrens = "\n";
 		for ( string c : children ){
-			childrens += c + "\n";
+			childrens += ind + c + "\n";
 		}
 		DEBUG( classname(), "children: " << childrens );
-
-		map<string, string> attrs = attributesMap( nodePath );
-
 
 		// write the encoding if we are exporting from root node
 		if ( "config" == tn && "" == nodePath )
@@ -900,6 +902,7 @@ namespace jdb{
 		// write the header
 		xml += nl + ind + "<" + tn;
 
+		map<string, string> attrs = attributesMap( nodePath );
 		// add attributes
 		for (auto a : attrs){
 			xml += ( " " + a.first + "=\"" + a.second + "\"" );
@@ -1069,6 +1072,7 @@ namespace jdb{
 
 		string shortestConflict = "";
 		bool conflicts = conflictExists( _data, shortestConflict );
+
 		int cDepth = depthOf( shortestConflict);
 
 		cout << "Depth of conflict (" << shortestConflict <<") = " << depthOf( shortestConflict) << endl;
@@ -1085,19 +1089,16 @@ namespace jdb{
 
 			for ( auto kv : *_data ){
 				
-				string str = kv.first; // eg "Path" should not match "Path[1]"
+				string str = kv.first;
 				
+				// no conflict here
 				if ( str.find( shortestConflict ) == string::npos ) {
-					// _d[ str ] = (*_data)[ kv.first ];
-					// _ia[ str ] = (*_isAttribute)[ kv.first ];
-					// _e[ str ] = (*_exists)[ kv.first ];
+					cout << "[NO CONFLICT] " << str << " with " << shortestConflict << endl;
 					continue;
 				}
 
 				string ptr = pathToDepth( kv.first, cDepth );
 				string npp = incrementPath( pathToDepth( kv.first, cDepth ) );
-
-				//cout << str <<  "==>" << pathToDepth( kv.first, cDepth ) << ", replace with " << incrementPath( pathToDepth( kv.first, cDepth ) ) << endl;
 				
 				string::size_type index = 0;
 				index = str.find( ptr, index);
@@ -1105,7 +1106,7 @@ namespace jdb{
 				if ( index != string::npos ){
 					/* Make the replacement. */
 					str.replace(index, ptr.length(), npp );
-					cout << "[REPLACE] " << ptr << ", with " << npp << " = " << str << endl;
+					// cout << "[REPLACE] " << ptr << ", with " << npp << " = " << str << endl;
 
 					_d[ str ] = (*_data)[ kv.first ];
 					_ia[ str ] = (*_isAttribute)[ kv.first ];
@@ -1183,19 +1184,15 @@ namespace jdb{
 		return base + indexOpenDelim + ts( pathIndex( _in )+_n ) + indexCloseDelim;
 	}
 
-	int XmlConfig::pathIndex( string _in ){
+	int XmlConfig::pathIndex( string _in ) const{
 		string::size_type first = _in.find(indexOpenDelim[0]);
 		string::size_type last  = _in.find(indexCloseDelim[0]);
-		// cout << "first = " << first << endl;
-		// cout << "last = " << last << endl;
-		if ( string::npos == first || string::npos == last ) return 0;
+
+		if ( string::npos == first || string::npos == last ) return -1;
 
 		string between = _in.substr(first+1,last-first-1);
-		// cout << "substring = " << between << endl;
 		return atoi( between.c_str() );
 	}
-
-
 
 	void XmlConfig::applyOverrides( map< string, string > over ) {
 		DEBUG( classname(), "Applying Overrides" );
@@ -1232,7 +1229,6 @@ namespace jdb{
 		return sstr.str();
 
 	}
-
 
 	void XmlConfig::addNode( string nodePath, string value ) {
 		DEBUG( classname(), "(" << nodePath << " = " << value << ")" );

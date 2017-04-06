@@ -431,7 +431,13 @@ namespace jdb {
 		 *
 		 * @return properly joined full path
 		 */
-		string join( std::initializer_list<string> paths ) const;
+		string join( std::initializer_list<string> paths ) const{
+			vector<string> vpaths;
+			for ( string p : paths ){
+				vpaths.push_back( p );
+			}
+			return join( vpaths );
+		}
 
 		/* Convenience method for joining path string
 		 *
@@ -440,18 +446,8 @@ namespace jdb {
 		string join( string a, string b, string c="", string d="", string e="", string f="" ) const {
 			return join( {a, b, c, d, e, f} );
 		}
-		
-		/* Get the attribute name from a full path
-		 *@nodePath Path to node. See getString(...)
-		 *
-		 * Extracts the attribute name from a full node path.
-		 * For instance:
-		 * The node path "category.sub.a:name" yields "name"
-		 *
-		 * @return The attribute name if the path contains one.
-		 * Empty string otherwise
-		 */
-		string attributeName( string nodePath ) const;
+
+		string join( vector<string> paths ) const;
 
 		/* Determines the depth of a node
 		 * @nodePath Path to Node
@@ -494,6 +490,47 @@ namespace jdb {
 		// Sanatizes node paths
 		string sanitize( string nodePath ) const;
 
+		// Strips the FINAL index if there are multiple
+		string stripIndex( string _in ) const{
+			string::size_type index = _in.find_last_of( indexOpenDelim[0] );
+			if ( string::npos != index ){
+				return _in.substr( 0, index );
+			}
+			return _in;
+		}
+
+		string addIndex( string _in, int index = 0 ) const {
+			// return basePath( _in ) + indexOpenDelim[0] + ts(index) + indexCloseDelim[0];
+			return _in + indexOpenDelim[0] + ts(index) + indexCloseDelim[0];
+		}
+
+		string stripAttribute( string _in ) const{
+			
+			string::size_type index = _in.find( attrDelim );
+			if ( string::npos != index ){
+				return _in.substr( 0, index );
+			} 
+			return _in;
+		}
+
+		/* Get the attribute name from a full path
+		 *@nodePath Path to node. See getString(...)
+		 *
+		 * Extracts the attribute name from a full node path.
+		 * For instance:
+		 * The node path "category.sub.a:name" yields "name"
+		 *
+		 * @return The attribute name if the path contains one.
+		 * Empty string otherwise
+		 */
+		string attributeName( string _in ) const{
+			string::size_type index = _in.find( attrDelim );
+			if ( string::npos != index ){
+				return _in.substr( index+1 );
+			} 
+			return "";
+		}
+
 	protected:
 
 		// A manual case lowing function
@@ -530,7 +567,7 @@ namespace jdb {
 
 		int numberOf( string _path );
 		string incrementPath( string _in, int _n = 1);
-		int pathIndex( string _in );
+		int pathIndex( string _in ) const;
 
 
 		// Adding content
@@ -541,22 +578,6 @@ namespace jdb {
 
 		// Override content from node after include when used in conjunction with applyOverrides
 		map<string, string> makeOverrideMap( string _nodePath );
-
-
-
-		string stripIndex( string _in ) const{
-			vector<string> byIndex = split( _in, indexOpenDelim[0] );
-			return byIndex[0];
-		}
-
-		string stripAttribute( string _in ) const{
-			vector<string> attr = split( _in, attrDelim );
-			if ( attr.size() >= 2 ){
-				return _in.substr( 0, _in.length() - attr[1].length() + 1 );
-			}
-			return _in;
-		}
-
 
 
 
