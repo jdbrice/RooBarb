@@ -143,6 +143,19 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		INFO( classname(), option << " " << p0 );
 		gStyle->SetTitleFontSize( fp0 );
 	}
+	if ("titlex" == option ){
+		gStyle->SetTitleX( fp0 );
+	}
+	if ("titley" == option ){
+		gStyle->SetTitleY( fp0 );
+	}
+	if ("titlexy" == option ){
+		gStyle->SetTitleX( fp0 );
+		gStyle->SetTitleY( fp1 );
+	}
+	if ("titlealign" == option ){
+		gStyle->SetTitleX( ip0 );
+	}
 	if ( "draw" == option ){
 		drawOption = p0;
 	}
