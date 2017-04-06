@@ -24,7 +24,7 @@ namespace jdb{
 	public:
 		virtual const char * classname() const { return "TaskEngine"; }
 		
-		TaskEngine( int argc, char *argv[] );
+		TaskEngine( int argc, char *argv[], string defaultType = "" );
 		~TaskEngine() {}
 
 		inline bool fileExists (const std::string& name) {
@@ -32,10 +32,14 @@ namespace jdb{
 			return (stat (name.c_str(), &buffer) == 0); 
 		}
 
-		void runTasks();
+		void setDefaultTask( string defaultType ){
+			_defaultType = defaultType;
+		}
+		void runTasks(  );
 
 	protected:
 		int jobIndex;
+		string _defaultType;
 
 		map<string, string> cmdLineConfig;
 		void getCmdLineConfigOverrides( int argc, char * argv[] );

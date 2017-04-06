@@ -486,6 +486,9 @@ namespace jdb {
 
 		void toXmlFile( string filename ) const;
 
+		string dump() const;
+		void dumpToFile( string filename ) const;
+
 		void add( string nodePath, string value="" );
 
 		// Sanatizes node paths

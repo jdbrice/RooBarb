@@ -500,6 +500,7 @@ namespace jdb{
 		// 	nodePath += pathDelim;
 	
 		int npDepth = depthOf( nodePath );
+		cout << "[childrenOf] nodePath = " << nodePath << ", " << npDepth << endl;  
 
 		vector<string> paths;
 		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
@@ -861,18 +862,27 @@ namespace jdb{
 
 		// learn about this node
 		string ind = indentation( tabCount, tab );
-		nodePath = basePath( nodePath );
-		string tn = tagName( nodePath );
+		nodePath   = basePath( nodePath );
+		string tn  = tagName( nodePath );
+
+		cout << ind << "basePath = " << nodePath << endl;
+		cout << ind << "tagName = " << tn << endl;
 
 		// scrub out include tags?
 		// if ( "Include" == tn )
-		// 	return "";
+		// 	return ""; 
 		// handle root node export:
-		if ( "" == tn || "" == nodePath )
+		if ( "" == tn || "" == nodePath ) 
 			tn = "config";
 
+		string snp = nodePath + pathDelim;
+		if ( pathDelim == snp[0] )
+			snp = "";
+		cout << ind << "ScopedNodePath = " << snp << endl;
+
 		string content = getString( nodePath );
-		vector<string> children = childrenOf( nodePath, 1 );
+		vector<string> children = childrenOf( snp, 1 );
+		cout << ind << snp << " has " << children.size() << " children" << endl;
 		DEBUG( classname(), tn << " has " << children.size() << " children" );
 		string childrens = "";
 		for ( string c : children ){
@@ -928,6 +938,26 @@ namespace jdb{
 
 		if ( out.is_open() ){
 			out << toXml(  );
+			out.close();
+		} else {
+			ERROR( classname(), "Cannot open " << filename );
+		}
+	}
+
+
+	string XmlConfig::dump() const {
+		string msg = "";
+		for ( auto kv : data ){
+			msg += quote(kv.first) + " : " + quote(kv.second) + "\n";
+		}
+		return msg;
+	}
+	void XmlConfig::dumpToFile( string filename) const {
+		ofstream out;
+		out.open( filename.c_str(), ios::out );
+
+		if ( out.is_open() ){
+			out << dump(  );
 			out.close();
 		} else {
 			ERROR( classname(), "Cannot open " << filename );

@@ -1,6 +1,8 @@
 #include "TaskEngine.h"
 
-TaskEngine::TaskEngine( int argc, char *argv[] ){
+TaskEngine::TaskEngine( int argc, char *argv[], string defaultType ){
+
+	setDefaultTask( defaultType );
 
 	try {
 
@@ -37,7 +39,7 @@ TaskEngine::TaskEngine( int argc, char *argv[] ){
 
 }
 
-void TaskEngine::runTasks(){
+void TaskEngine::runTasks( ){
 
 	vector<string> paths = config.childrenOf( "", "Task", 1 );
 	INFO( classname(), "Found " << paths.size() << plural( paths.size(), " task", " tasks" ) );
@@ -85,6 +87,23 @@ void TaskEngine::runTasks(){
 		INFO( classname(), "Task :" << _type << " " << _name << ANSIColors::color( " Complete", "green" ) );
 
 	}// loop on task paths
+
+	//  Check for default Task to run
+	if ( paths.size() <= 0 && "" != _defaultType ){
+		TaskRunner * taskRunner = TaskFactory::createTaskRunner( _defaultType );
+		if ( nullptr == taskRunner ){
+			ERROR( classname(), "Cannot create default Task of " << _defaultType << ". Maybe you need to register it?" );
+			ERROR( classname(), "TaskFactory::registerTaskRunner<" << _defaultType << ">( \""<< _defaultType <<"\" );" );
+			return;
+		}
+
+		taskRunner->init( config, "" );
+		taskRunner->run();
+
+		delete taskRunner;
+	}
+
+
 }// runTasks
 
 void TaskEngine::getOverrideFromString( string s, string &path, string &value ){
