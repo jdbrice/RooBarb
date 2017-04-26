@@ -177,8 +177,8 @@ namespace jdb{
 			return cloneBinRange( _h, name, b1, b2 );
 		}
 
-		static TH1* cloneBinRange( TH1 *_hFrom, TH1* _hTo, int bX1=0, int bX2 = -1 ){
-			if (nullptr == _hFrom || nullptr == _hTo) return nullptr;
+		static void cloneBinRange( TH1 *_hFrom, TH1* _hTo, int bX1=0, int bX2 = -1 ){
+			if (nullptr == _hFrom || nullptr == _hTo) return;
 			TAxis * x = _hFrom->GetXaxis();
 			int b1 = bX1;
 			if ( b1 < 0 ) b1 = 0;
@@ -190,13 +190,15 @@ namespace jdb{
 				_hTo->SetBinError( iB, _hFrom->GetBinError( iB ) );
 			}
 		}
-		static TH1* cloneRange( TH1 *_hFrom, TH1* _hTo, float x1=0, float x2 = -1 ){
-			if (nullptr == _hFrom || nullptr == _hTo ) return nullptr;
+		static void cloneRange( TH1 *_hFrom, TH1* _hTo, float x1=0, float x2 = -1 ){
+			if (nullptr == _hFrom || nullptr == _hTo ) return;
 			TAxis * x = _hFrom->GetXaxis();
 			int b1 = x->FindBin( x1 );
 			int b2 = x->FindBin( x2 );
+			
+			cloneBinRange( _hFrom, _hTo, b1, b2 );
 
-			return cloneBinRange( _hFrom, _hTo, b1, b2 );
+			return;
 		}
 
 		static TH1* relativeErrors( TH1* _h, string name ){

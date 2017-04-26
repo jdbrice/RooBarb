@@ -44,6 +44,15 @@ namespace jdb{
 		virtual const char* classname() const { return "HistoBins"; }
 
 
+		static void labelAxis( TAxis *_x, vector<string> _labels ){
+			if ( nullptr == _x ) return;
+			
+			for ( int i = 0; i <= _x->GetNbins(); i++ ){
+				if ( i < _labels.size() )
+					_x->SetBinLabel( i+1, _labels[i].c_str() );
+			}
+		}
+
 		/* General purpose Rebins for 2D histo 
 		 * _hOld is the histogram with current binning and data
 		 * _hNew is a preconstructed but empty histogram with the new binning
@@ -298,16 +307,32 @@ namespace jdb{
 			DEBUG( classname(), "(" << _config.getFilename() << ", " << _nodePath << ", " << _lm << " )"  );
 			// return;
 
+			string type = _config.getString( _nodePath + ":type", "NONE" );
+
 			// get the bins as an array of edges
 			if ( _config.exists( _nodePath ) && _config.getDoubleVector( _nodePath ).size() >= 2 ){
-				bins = _config.getDoubleVector( _nodePath );
-				min = bins[ 0 ];
-				max = bins[ nBins() ];
-				width = -1;	// not loading from fixed width
-				numberofBins = -1; // not loading from nbins
-				DEBUG( classname(), "Found vector of bin edges @ " << _nodePath );
-				return;
-			}  
+				if ( "NONE" == type || "edges" == type ){
+					bins = _config.getDoubleVector( _nodePath );
+					min = bins[ 0 ];
+					max = bins[ nBins() ];
+					width = -1;	// not loading from fixed width
+					numberofBins = -1; // not loading from nbins
+					DEBUG( classname(), "Found vector of bin edges @ " << _nodePath );
+					return;
+				} else if ( "ls" == type || "linspace" == type ){
+					linspace( _config, _nodePath );
+					return;
+				} else if ( "ar" == type || "arange" == type ){
+					arange( _config, _nodePath );
+					return;
+				} else if ( "l" == type || "labels" == type ){
+					labels( _config, _nodePath );
+					return;
+				}
+				
+			} else {
+
+			}
 
 			string wt = ":width";
 			string mint = ":min";
@@ -377,6 +402,22 @@ namespace jdb{
 			}
 		}
 
+		/* makes bins for labels
+		 *
+		 * :type="l" or "labels"
+		 * and node should point to vector of strings 
+		 */
+		void labels( XmlConfig &_c, string _path = "" ){
+			binLabels = _c.getStringVector( _path );
+			bins = makeFixedWidthBins( 1, 0, binLabels.size()+5 );
+			min = 0;
+			max = binLabels.size()+5;
+		}
+
+		void labelAxis( TAxis *_x ){
+			HistoBins::labelAxis( _x, binLabels );
+		}
+
 
 		
 
@@ -443,12 +484,17 @@ namespace jdb{
 		// TODO: make the bin edges protected
 		// Vector of bin edges
 		vector<double> bins;	
+		vector<string> binLabels;
 
 		double minimum() {
 			return min;
 		}
 		double maximum() {
 			return max;
+		}
+
+		bool hasLabels(){
+			return binLabels.size() > 0;
 		}
 
 		vector<pair< double, double> > subranges( int nWide ){

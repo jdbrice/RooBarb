@@ -531,6 +531,7 @@ namespace jdb {
 			return "";
 		}
 
+
 	protected:
 
 		// A manual case lowing function

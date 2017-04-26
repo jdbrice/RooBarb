@@ -116,6 +116,15 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	TGraph * g 	= dynamic_cast<TGraph*>(styling);
 	TF1 * fn 	= dynamic_cast<TF1*>(styling);
 
+	if ( "min" == option ){
+		if ( nullptr != h ) h->SetMinimum( fp0 );
+	}
+
+	if ( "max" == option ){
+		cout << "MAX: " << fp0 << endl;
+		if ( nullptr != h ) h->SetMaximum( fp0 );
+	}
+
 
 	// get the X axis
 	TAxis * ax = nullptr;

@@ -314,42 +314,61 @@ namespace jdb{
 
 		TRACE( "HistoBook", "nDimensions = " << nD );
 
+		TH1 * h = nullptr;
 		if ( 1 == nD ){
 			if ( "C" == _type )
-				return new TH1C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+				h = new TH1C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
 			if ( "S" == _type )
-				return new TH1S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+				h = new TH1S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
 			if ( "I" == _type )
-				return new TH1I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+				h = new TH1I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
 			if ( "F" == _type )
-				return new TH1F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+				h = new TH1F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
 			if ( "D" == _type )
-				return new TH1D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+				h = new TH1D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data() );
+			if ( nullptr != h && _bx.hasLabels() )
+				_bx.labelAxis( h->GetXaxis() );
 		} // make 1Ds
 		else if ( 2 == nD ){
 			if ( "C" == _type )
-				return new TH2C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+				h = new TH2C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
 			if ( "S" == _type )
-				return new TH2S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+				h = new TH2S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
 			if ( "I" == _type )
-				return new TH2I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+				h = new TH2I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
 			if ( "F" == _type )
-				return new TH2F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+				h = new TH2F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
 			if ( "D" == _type )
-				return new TH2D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+				h = new TH2D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data() );
+
+			if ( nullptr != h && _bx.hasLabels() )
+				_bx.labelAxis( h->GetXaxis() );
+			if ( nullptr != h && _by.hasLabels() )
+				_by.labelAxis( h->GetYaxis() );
+
 		} // make 2Ds
 		else if ( 3 == nD ){
 			if ( "C" == _type )
-				return new TH3C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+				h = new TH3C( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
 			if ( "S" == _type )
-				return new TH3S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+				h = new TH3S( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
 			if ( "I" == _type )
-				return new TH3I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+				h = new TH3I( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
 			if ( "F" == _type )
-				return new TH3F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+				h = new TH3F( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
 			if ( "D" == _type )
-				return new TH3D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+				h = new TH3D( _name.c_str(), _title.c_str(), _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+
+			if ( nullptr != h && _bx.hasLabels() )
+				_bx.labelAxis( h->GetXaxis() );
+			if ( nullptr != h && _by.hasLabels() )
+				_by.labelAxis( h->GetYaxis() );
+			if ( nullptr != h && _bz.hasLabels() )
+				_bz.labelAxis( h->GetZaxis() );
 		} // make 2Ds
+
+		if ( nullptr != h )
+			return h;
 
 		WARN( "HistoBook", "Unable to make Histogram " << _type << ", " << _name << ", " << _title );
 		return nullptr;
