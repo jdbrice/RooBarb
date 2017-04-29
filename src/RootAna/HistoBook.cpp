@@ -22,11 +22,7 @@ namespace jdb{
 	 * @param inDir input starting directory
 	 */
 	HistoBook::HistoBook( string name, string input, string inDir ){
-		this->filename = name;
-		this->inputFilename = input;
-		this->inputDir = inDir;
-
-		initialize();
+		setup( name, input, inDir );
 	}	// Constructor
 
 	/**
@@ -35,12 +31,7 @@ namespace jdb{
 	 * @param con  The config file to use for all config relates calls
 	 */
 	HistoBook::HistoBook( string name, XmlConfig config, string input, string inDir){
-		this->filename = name;
-		this->config = config;
-		this->inputFilename = input;
-		this->inputDir = inDir;
-
-		initialize();
+		setup( name, config, input, inDir );
 	}	// Constructor
 
 	void HistoBook::initialize(){
@@ -388,12 +379,11 @@ namespace jdb{
 			if ( "" == hName )
 				hName = nodeName;
 
-			// store the path in the config file
-			configPath[ hName ] = nodeName;
-
 			string type 	= config.getString( nodeName + ":type", "D" );
 			string hTitle 	= config.getString( nodeName + ":title", hName );
-
+			vector<string> hTitles = config.getStringVector(nodeName + ":titles" );
+			string xTtile   = config.getString( nodeName +":x" );
+			string yTtile   = config.getString( nodeName +":y" );
 
 			HistoBins* bx;
 			HistoBins* by;
@@ -414,31 +404,73 @@ namespace jdb{
 			else 
 				bz = new HistoBins( config, nodeName, "z" );
 
+			string baseHName = hName;
+			vector<string> prefixes = config.getStringVector( nodeName +":prefixes" );
+			vector<string> suffixes = config.getStringVector( nodeName + ":suffixes" );
+			vector<string> variants = config.getStringVector( nodeName + ":variants" );
 
-			// check if histogram exists, if it does the copy in the book won't be over-written but the ROOT one will if they have the same names
-			TH1 * tmp = nullptr;
 
-			if ( !exists( hName ) ){
-				tmp = make( type, hName, hTitle, (*bx), (*by), (*bz) );
-
-				if ( nullptr != tmp ){
-					add( hName, tmp );
-				} else if ( config.exists( nodeName + ":bins_x" ) || config.exists( nodeName + ":bins_y" ) || config.exists( nodeName + ":bins_z" ) ) {
-					ERROR( classname(), "could not make histogram : " << hName );
-					if ( config.exists( nodeName + ":bins_x" ) ){
-						ERROR( classname(), "x bins : " << bx->toString() );
-					}
-					if ( config.exists( nodeName + ":bins_y" ) ){
-						ERROR( classname(), "y bins : " << by->toString() );
-					}
-					if ( config.exists( nodeName + ":bins_z" ) ){
-						ERROR( classname(), "z bins : " << bz->toString() );
-					}
-					// ERROR( classname(), "histo : " << tmp );
+			if ( variants.size() == 0 ){
+				// use name and prefix/suffix
+				string prefix = "";
+				string suffix = "";
+				for ( size_t i = 0; i < max( suffixes.size(), prefixes.size() ); i++ ){
+					if ( i < prefixes.size() ) 
+						prefix = prefixes[i];
+					else 
+						prefix = "";
+					if ( i < suffixes.size() )
+						suffix = suffixes[i];
+					else 
+						suffix = "";
+					variants.push_back( prefix + hName + suffix );
 				}
-			} else {
-				WARN( classname(), "Duplicate " << hName << " Cannot Add" );
 			}
+
+			if ( variants.size() == 0 ){
+				// if still zero then normal mode, ie just one name, one histogram
+				variants.push_back( hName );
+			}
+			
+			size_t i = 0;
+			for ( string vhName : variants ){
+				configPath[ vhName ] = nodeName;
+				// check if histogram exists, if it does the copy in the book won't be over-written but the ROOT one will if they have the same names
+				TH1 * tmp = nullptr;
+
+				if ( !exists( vhName ) ){
+					string title = hTitle;
+					if ( i < hTitles.size() ) title = hTitles[ i ];
+
+					tmp = make( type, vhName, title, (*bx), (*by), (*bz) );
+
+					if ( nullptr != tmp ){
+						add( vhName, tmp );
+
+						if ( "" != xTtile )
+							tmp->GetXaxis()->SetTitle( xTtile.c_str() );
+						if ( "" != yTtile )
+							tmp->GetYaxis()->SetTitle( yTtile.c_str() );
+
+					} else if ( config.exists( nodeName + ":bins_x" ) || config.exists( nodeName + ":bins_y" ) || config.exists( nodeName + ":bins_z" ) ) {
+						ERROR( classname(), "could not make histogram : " << vhName );
+						if ( config.exists( nodeName + ":bins_x" ) ){
+							ERROR( classname(), "x bins : " << bx->toString() );
+						}
+						if ( config.exists( nodeName + ":bins_y" ) ){
+							ERROR( classname(), "y bins : " << by->toString() );
+						}
+						if ( config.exists( nodeName + ":bins_z" ) ){
+							ERROR( classname(), "z bins : " << bz->toString() );
+						}
+						// ERROR( classname(), "histo : " << tmp );
+					}
+				} else {
+					WARN( classname(), "Duplicate " << vhName << " Cannot Add" );
+				}
+				i++;
+			} // loop on variant names
+			
 
 			delete bx;
 			delete by;

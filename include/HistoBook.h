@@ -213,10 +213,27 @@ namespace jdb{
 		}
 
 
-
+		HistoBook() {}
 		HistoBook( string name, string input = "", string inDir = "" );		
 		HistoBook( string name, XmlConfig config, string input = "", string inDir = "");
 		~HistoBook();
+
+		virtual void setup( string name, string input="", string inDir="" ){
+			this->filename = name;
+			this->inputFilename = input;
+			this->inputDir = inDir;
+
+			initialize();
+		}
+
+		virtual void setup( string name, XmlConfig config, string input="", string inDir=""){
+			this->filename = name;
+			this->config = config;
+			this->inputFilename = input;
+			this->inputDir = inDir;
+
+			initialize();
+		}
 
 		virtual const char* classname() const { return "HistoBook"; }
 
