@@ -44,14 +44,12 @@ namespace jdb{
 		 * <Range name="danny" min="100" max=":100" />
 		 * ```
 		 */
-		XmlRange( XmlConfig * cfg, string np, double dMin = 0, double dMax = 0, string attrMin = ":min", string attrMax = ":max"){
-			if ( cfg ){
-				min = cfg->getDouble( np + attrMin, dMin );
-				max = cfg->getDouble( np + attrMax, dMax );
-			} else {
-				min = dMin;	
-				max = dMax;
-			}
+		XmlRange( XmlConfig * _cfg, string _nodePath, double dMin = 0, double dMax = 0, string attrMin = ":min", string attrMax = ":max"){
+			loadConfig( *_cfg, _nodePath, dMin, dMax, attrMin, attrMax );
+		}
+
+		XmlRange( XmlConfig &_cfg, string _nodePath, double dMin = 0, double dMax = 0, string attrMin = ":min", string attrMax = ":max"){
+			loadConfig( _cfg, _nodePath, dMin, dMax, attrMin, attrMax );
 		}
 
 		/* Default empty constructor

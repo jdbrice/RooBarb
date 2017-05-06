@@ -180,6 +180,10 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		drawClone = false;
 	}
 
+	if ( "contours" == option ){
+		if ( nullptr != h ) h->SetContour( ip0 );
+	}
+
 
 	if ( "axisdigits" == option ){
 		TGaxis::SetMaxDigits( ip0 );

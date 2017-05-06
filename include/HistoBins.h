@@ -5,8 +5,7 @@
 #include "XmlConfig.h"
 #include "Utils.h"
 #include "Logger.h"
-
-	#include "IObject.h"
+#include "IObject.h"
 
 
 // STL
