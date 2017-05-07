@@ -68,9 +68,7 @@ namespace jdb{
 		void setCurrentFile( string name ){
 			if ( rootFiles.count( name ) > 0 ){
 				inFile = rootFiles[ name ];
-			} else {
-				ERROR( classname(), "No file named " << name << " available" );
-			}
+			} 
 		}
 
 		unsigned int numberOfFiles(){
@@ -145,7 +143,7 @@ namespace jdb{
 
 		virtual void init( XmlConfig &_config, string _nodePath );
 		// virtual void init( XmlConfig &_config, string _nodePath="", string _fileList = "", string _jobPostfix = "" );
-		virtual void initialize() { DEBUG( classname(), "HistoAnalyzer" ); };
+		virtual void initialize() { /*noop*/ };
 
 		/* The Maker function
 		 *
