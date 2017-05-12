@@ -117,6 +117,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	TF1 * fn 	= dynamic_cast<TF1*>(styling);
 
 	if ( "min" == option ){
+		cout << "MIN: " << fp0 << endl;
 		if ( nullptr != h ) h->SetMinimum( fp0 );
 	}
 
@@ -168,7 +169,7 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( "draw" == option ){
 		drawOption = p0;
 	}
-	if ( "norm" == option ){
+	if ( "norm" == option && (p0 == "true" || ip0 > 0 ) ){
 		drawNorm = true;
 	} else {
 		drawNorm = false;
@@ -183,6 +184,8 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	if ( "contours" == option ){
 		if ( nullptr != h ) h->SetContour( ip0 );
 	}
+
+
 
 
 	if ( "axisdigits" == option ){
