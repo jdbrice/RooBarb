@@ -3,6 +3,7 @@
 
 
 #include "XmlString.h"
+#include "Utils.h"
 
 #ifdef __CINT__
 ClassImp( jdb::XmlConfig );
