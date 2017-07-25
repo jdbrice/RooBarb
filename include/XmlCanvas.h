@@ -32,7 +32,6 @@ namespace jdb{
         string getName() { return name; }
 
         XmlCanvas( XmlConfig &cfg, string _nodePath ) {
-            TRACE( "" );
             if ( cfg.exists( _nodePath ) ) {
                 string preNode = cfg.cn(_nodePath);
 
@@ -45,14 +44,14 @@ namespace jdb{
                 nCol = cfg.getInt( ":columns", cfg.getInt( ":cols", cfg.getInt( ":nCols", 12 ) ) );
                 nRow = cfg.getInt( ":rows", 12 );
 
-                DEBUG( "name=" << name << ", title=" << title <<", width=" << pxWidth << ", height=" << pxHeight );
+                DEBUGC( "name=" << name << ", title=" << title <<", width=" << pxWidth << ", height=" << pxHeight );
                 rootCanvas = new TCanvas( name.c_str(), title.c_str(), pxWidth, pxHeight );
 
                 createPads( cfg, _nodePath );
 
                 cfg.cn(preNode);
             } else {
-                TRACE("No XmlConfig Given : Creating Default Canvas" );
+                TRACEC("No XmlConfig Given : Creating Default Canvas" );
                 rootCanvas = new TCanvas( "XmlCanvas", "XmlCanvas", 800, 1200 );
             }
 
@@ -77,7 +76,7 @@ namespace jdb{
                 pads[ padName ]->cd();
                 return pads[ padName ]->getPad();
             } else {
-                ERROR( "Requested pad : " << padName << " unavailable" )
+                ERRORC( "Requested pad : " << padName << " unavailable" )
                 rootCanvas->cd();
             }
             return nullptr;
@@ -89,15 +88,15 @@ namespace jdb{
 
     protected:
         void createPads( XmlConfig &cfg, string _nodePath ){
-            TRACE( "" );
+            
             vector<string> children = cfg.childrenOf( _nodePath, "Pad" );
-            DEBUG( "Found " << children.size() );
+            DEBUGC( "Found " << children.size() );
             for ( string path : children ){
-                DEBUG( "Creating Pad From " << path );
+                DEBUGC( "Creating Pad From " << path );
                 this->cd();
                 cfg.cn( path );
                 string name = cfg.getString( ":name", cfg.getString( ":n", "" ) );
-                DEBUG( "Creating Pad named " << name );
+                DEBUGC( "Creating Pad named " << name );
                 if ( "" != name )
                     pads[ name ] = shared_ptr<XmlPad>( new XmlPad( cfg, "", nRow, nCol ) );
             }
