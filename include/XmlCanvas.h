@@ -77,7 +77,6 @@ namespace jdb{
                 pads[ padName ]->cd();
                 return pads[ padName ]->getPad();
             } else {
-                ERRORC( "Requested pad : " << padName << " unavailable" )
                 rootCanvas->cd();
             }
             return nullptr;
