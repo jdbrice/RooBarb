@@ -32,6 +32,7 @@ vars.Add( 'ROOT6', 'Support ROOT6?', 1 )
 # jdb_log_level = ARGUMENTS.get( "ll", 60 )
 
 common_env = Environment( variables = vars )
+common_env['ENV']['TERM'] = os.environ['TERM']
 Help(vars.GenerateHelpText(common_env))
 
 print "RELEASE =", common_env[ "RELEASE" ]

@@ -29,6 +29,11 @@ namespace jdb {
 		 * @prefix Prefix to prepend to filename (usually for multiple jobs)
 		 */
 		Reporter( XmlConfig &config, string np, string prefix = "" );
+		/* Create a Reporter from an existing Canvas
+		 * @filename The filename of the report
+		 * @_canvas existing TCanvas object
+		 */
+		Reporter( string filename, TCanvas * _canvas );
 		~Reporter();
 
 		virtual const char * classname() const { return "Reporter"; }
@@ -60,6 +65,11 @@ namespace jdb {
 		 * 
 		 */
 		void savePage( string name = "" );
+
+		/* Saves the given Canvas as a page in the report
+		 *
+		 */
+		void savePage( TCanvas *_canvas );
 		/* Saves an image to the given filename. 
 		 * Must have suffix to determine format, ie .png, .jpg etc."
 		 */
@@ -76,6 +86,9 @@ namespace jdb {
 		 * @return the TCanvas instance
 		 */
 		TCanvas * getCanvas() { return canvas; }
+		void setCanvas( TCanvas * _canvas ){
+			this->canvas = _canvas;
+		}
 
 		void close();
 

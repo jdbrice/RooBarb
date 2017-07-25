@@ -22,6 +22,26 @@ namespace jdb{
 		DEBUG( classname(), " Instance #" << instances );
 	}
 
+	Reporter::Reporter( string filename, TCanvas * _canvas ){
+		DEBUG( classname(), "(" <<  filename <<  ", canvas=" << _canvas << ")" )
+	
+		this->filename = filename;
+
+		canvas = _canvas;
+		if ( nullptr == canvas ){
+			ERRORC( "Canvas was NULL, fallback to new canvas" );
+			canvas = new TCanvas( ("Reporter"+ts(instances)).c_str() , "canvas", 800, 800);
+			instances++;
+		}
+
+		canvas->Print( ( filename + "[" ).c_str() );
+		INFO( classname(), " Opening report " << filename );
+	
+		isOpen = true;
+
+		DEBUG( classname(), " Instance #" << instances );
+	}
+
 	Reporter::Reporter( XmlConfig &config, string np, string prefix ){
 		DEBUG( classname(), "( config, np=" << np << ", prefix=" << prefix << ")" )
 
@@ -103,6 +123,11 @@ namespace jdb{
 			canvas->Print( name.c_str() );
 			DEBUG( classname(), " Saving Page to " << name );
 		}
+	}
+
+	void Reporter::savePage( TCanvas *_canvas ){
+		if ( nullptr == _canvas ) return;
+		_canvas->Print( ( filename ).c_str() );
 	}
 
 	void Reporter::saveImage( string name ){
