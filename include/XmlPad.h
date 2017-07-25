@@ -24,7 +24,7 @@ namespace jdb{
 
 	public:
 		XmlPad( XmlConfig &_cfg, string _nodePath, int _nGridX = 6, int _nGridY = 6 ){
-			TRACE("");
+			
 			if ( _cfg.exists( _nodePath ) ) {
 
 				string preNode = "";
@@ -82,7 +82,7 @@ namespace jdb{
 				name = _cfg.getString( ":name", _cfg.getString( ":n", "c" ) );
 				title = _cfg.getString( ":title", _cfg.getString( ":t", "c" ) );
 
-				DEBUG( "name=" << name << ", title=" << title <<", x1=" << x1 << ", x2=" << x2 << ", y1=" << y1 << ", y2=" << y2 );
+				DEBUGC( "name=" << name << ", title=" << title <<", x1=" << x1 << ", x2=" << x2 << ", y1=" << y1 << ", y2=" << y2 );
 
 
 				rootPad = new TPad( name.c_str(), title.c_str(), x1, y1, x2, y2 );
@@ -108,7 +108,7 @@ namespace jdb{
 
 		void cd(){
 			if ( !rootPad ){
-				ERROR( "ROOT PAD DNE" )
+				ERRORC( "ROOT PAD DNE" )
 				return;
 			}
 			rootPad->cd();
