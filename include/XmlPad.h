@@ -109,7 +109,6 @@ namespace jdb{
 
 		void cd(){
 			if ( !rootPad ){
-				ERRORC( "ROOT PAD DNE" )
 				return;
 			}
 			rootPad->cd();
