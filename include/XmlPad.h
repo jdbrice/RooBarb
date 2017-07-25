@@ -12,7 +12,7 @@ using namespace jdb;
 
 
 namespace jdb{
-	class XmlPad {
+	class XmlPad : public IObject{
 
 	protected:
 
@@ -23,6 +23,7 @@ namespace jdb{
 
 
 	public:
+		virtual const char* classname() const { return "XmlPad"; }
 		XmlPad( XmlConfig &_cfg, string _nodePath, int _nGridX = 6, int _nGridY = 6 ){
 			
 			if ( _cfg.exists( _nodePath ) ) {

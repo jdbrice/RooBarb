@@ -17,7 +17,7 @@ using namespace std;
 
 
 namespace jdb{
-    class XmlCanvas {
+    class XmlCanvas : public IObject{
 
     protected:
         string name, title;
@@ -29,6 +29,7 @@ namespace jdb{
         map<string, shared_ptr<XmlPad> > pads;
 
     public:
+    virtual const char * classname() const { return "XmlCanvas"; }
         string getName() { return name; }
 
         XmlCanvas( XmlConfig &cfg, string _nodePath ) {
