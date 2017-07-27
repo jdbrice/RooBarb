@@ -86,6 +86,8 @@ namespace jdb{
             return rootCanvas;
         }
 
+        
+
     protected:
         void createPads( XmlConfig &cfg, string _nodePath ){
             

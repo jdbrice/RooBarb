@@ -158,7 +158,7 @@ namespace jdb {
 		}
 
 		template <typename T>
-		const T get( string path ) const {
+		T get( string path ) const {
 			stringstream sstr;
 			sstr << getString( path );
 			T result;
@@ -167,7 +167,7 @@ namespace jdb {
 		}
 
 		template <typename T>
-		const T get( string path, T dv ) const {
+		T get( string path, T dv ) const {
 			if ( !exists( path ) )
 				return dv;
 			stringstream sstr;
