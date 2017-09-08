@@ -154,13 +154,13 @@ namespace jdb{
 		string value = getXString( nodePath );
 		return vectorFromString( value );
 	}
-	// vector<string> XmlConfig::getStringVector( string nodePath, vector<string> defaultVals ) const {
-	// 	if ( !exists( nodePath ) ){
-	// 		return defaultVals;
-	// 	}
-	// 	string value = getString( nodePath );
-	// 	return vectorFromString( value );
-	// }
+	vector<string> XmlConfig::getStringVector( string nodePath, vector<string> defaultVals ) const {
+		if ( !exists( nodePath ) ){
+			return defaultVals;
+		}
+		string value = getString( nodePath );
+		return vectorFromString( value );
+	}
 
 	map<string, string> XmlConfig::getStringMap( string nodePath ) const{
 

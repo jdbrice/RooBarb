@@ -232,7 +232,7 @@ namespace jdb {
 		 */
 		vector<string> getStringVector( string nodePath, string defaultVal = "", int defaultLength = 0 ) const;
 		// AMBIGUOUS!!!
-		// vector<string> getStringVector( string nodePath, vector<string> defaultVals ) const;
+		vector<string> getStringVector( string nodePath, vector<string> defaultVals ) const;
 
 		/* Gets a node or attribute as integer data
 		 * @nodePath Path to node. See getString(...)
