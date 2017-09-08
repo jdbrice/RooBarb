@@ -143,6 +143,15 @@ namespace jdb{
 		return XmlString().format( (*this), raw );
 	}
 
+	vector<string> XmlConfig::getStringVector( string nodePath ) const {
+		if ( !exists( nodePath ) ){
+			vector<string> d;
+			return d;
+		}
+		string value = getXString( nodePath );
+		return vectorFromString( value );
+	}
+	
 	vector<string> XmlConfig::getStringVector( string nodePath, string defaultVal, int defaultLength ) const {
 		
 		if ( !exists( nodePath ) ){

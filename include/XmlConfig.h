@@ -223,6 +223,7 @@ namespace jdb {
 		 */
 		string getXString( string nodePath, string def = "" ) const;
 
+		vector<string> getStringVector( string nodePath ) const;
 		/* Gets a vector of strings from a comma delimeter list
 		 * @nodePath Path to node. See getString.
 		 * Gets a vector from a comma delimeted list. 
@@ -230,8 +231,9 @@ namespace jdb {
 		 *
 		 * @return A vector of strings or an empty vector if the node DNE
 		 */
-		vector<string> getStringVector( string nodePath, string defaultVal = "", int defaultLength = 0 ) const;
-		// AMBIGUOUS!!!
+		vector<string> getStringVector( string nodePath, string defaultVal, int defaultLength ) const;
+		
+		// pass a default vector in as an initializer list etc.
 		vector<string> getStringVector( string nodePath, vector<string> defaultVals ) const;
 
 		/* Gets a node or attribute as integer data
