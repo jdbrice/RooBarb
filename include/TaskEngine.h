@@ -43,7 +43,7 @@ namespace jdb{
 
 		map<string, string> cmdLineConfig;
 		void getCmdLineConfigOverrides( int argc, char * argv[] );
-		void getOverrideFromString( string s, string &path, string &value );
+		void getOverrideFromString( string s, string &path, string &value, int iarg );
 
 		// only needed so thatI cna be backwards compatibile with my old way
 		// should be called after getCmdLineConfigOverrides
