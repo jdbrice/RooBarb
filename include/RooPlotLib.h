@@ -87,6 +87,7 @@ namespace jdb{
 	     * @return 		reference to RooPlotLib object for method chaining
 	     */
 	    RooPlotLib &draw();
+		RooPlotLib &draw( string appendDrawOpt );
 
 
 	    int color( string color );

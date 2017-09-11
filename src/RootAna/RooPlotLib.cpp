@@ -480,6 +480,11 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 	return *this;
 }
 
+RooPlotLib &jdb::RooPlotLib::draw( string appendDrawOpt ){
+	drawOption += " same";
+	return draw();
+}
+
 
 
 // TODO: Add more colors
