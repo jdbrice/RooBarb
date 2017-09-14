@@ -457,6 +457,9 @@ RooPlotLib &jdb::RooPlotLib::set( XmlConfig * cfg, string nodePath ){
 
 RooPlotLib &jdb::RooPlotLib::set( XmlConfig &cfg, string nodePath ){
 	DEBUG(classname(), "");
+	if ( cfg.exists( cfg.getString( nodePath ) ) ){
+		set( &cfg, cfg.getString( nodePath ) );
+	}
 	set( &cfg, nodePath );
 
 	return *this;
