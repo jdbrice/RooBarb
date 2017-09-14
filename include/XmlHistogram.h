@@ -5,6 +5,7 @@
 #include "XmlConfig.h"
 #include "Utils.h"
 #include "IObject.h"
+#include "HistoBins.h"
 
 // STL
 #include <memory>
@@ -12,6 +13,7 @@
 // ROOT
 #include "TH1.h"
 #include "TFile.h"
+#include "TAxis.h"
 
 
 namespace jdb{
@@ -74,6 +76,95 @@ namespace jdb{
 				return "XmlHistogram<name=" + quote(string(h1->GetName())) + ">";
 			}
 			return "XmlHistogram<nullptr>";
+		}
+
+		static string toXml( TAxis * _a, string axis = "X" ){
+			string xml = "<BinEdges" + axis + ">";
+			string delim = "";
+			for ( int i = 1; i <= _a->GetNbins(); i++ ){
+				xml += delim + dts( _a->GetBinLowEdge(i) );
+				delim = ", ";
+			}
+			xml += delim + dts( _a->GetBinUpEdge( _a->GetNbins() ) );
+			xml += "</BinEdges" + axis + ">";
+			return xml;
+		}
+		static string toXml( TH1 * _h ){
+			if ( nullptr == _h )
+				return "";
+			int nDims = 1;
+			if ( _h->GetNbinsY() > 1 ) nDims = 2;
+			if ( _h->GetNbinsZ() > 1 ) nDims = 3;
+
+			string xml = "<HistogramData name=" + quote( _h->GetName() ) + " title=" +quote( _h->GetTitle() ) + " dims=" + quote(nDims) + ">";
+			if ( nDims >= 1 )
+				xml += "\n\t" + XmlHistogram::toXml( _h->GetXaxis(), "X" );
+			if ( nDims >= 2 )
+				xml += "\n\t" + XmlHistogram::toXml( _h->GetYaxis(), "Y" );
+			if ( nDims >= 3 )
+				xml += "\n\t" + XmlHistogram::toXml( _h->GetZaxis(), "Z" );
+
+			xml += "\n\t<Values>";
+			string delim = "";
+			for ( int ix = 1; ix <= _h->GetNbinsX(); ix++ ){
+				for ( int iy = 1; iy <= _h->GetNbinsY(); iy++ ){
+					for ( int iz = 1; iz <= _h->GetNbinsZ(); iz++ ){
+						int globalBin = _h->GetBin( ix, iy, iz );
+						xml += delim + dts( _h->GetBinContent( globalBin ) );
+						delim = ", ";
+					}
+				}
+			}
+			xml += "</Values>";
+			
+			xml += "\n\t<Errors>";
+			delim = "";
+			for ( int ix = 1; ix <= _h->GetNbinsX(); ix++ ){
+				for ( int iy = 1; iy <= _h->GetNbinsY(); iy++ ){
+					for ( int iz = 1; iz <= _h->GetNbinsZ(); iz++ ){
+						int globalBin = _h->GetBin( ix, iy, iz );
+						xml += delim + dts( _h->GetBinError( globalBin ) );
+						delim = ", ";
+					}
+				}
+			}
+			xml += "</Errors>";
+				
+
+			xml += "\n</HistogramData>";
+			return xml;
+		}
+
+		static TH1 * fromXml( XmlConfig &config, string path ){
+			if ( false == config.exists( path + ":name" ) ||
+				 false == config.exists( path + ".BinEdgesX" ) ||
+				 false == config.exists( path + ".Values" ) ) 
+				return nullptr;
+			string name = config.getString( path + ":name" );
+			string title = config.getString( path + ":title" );
+			int nDims = config.getInt( path + ":dims", 1 );
+			HistoBins bx( config, path + ".BinEdgesX" );
+			HistoBins by( config, path + ".BinEdgesY" );
+			HistoBins bz( config, path + ".BinEdgesZ" );
+
+			cout << "Making " << nDims << "D name=" << name << " title=" << title << endl;
+			TH1 * _h = HistoBook::make( "D", name, title, bx, by, bz );
+
+			vector<float> values = config.getFloatVector( path + ".Values" );
+			vector<float> errors = config.getFloatVector( path + ".Errors" );
+			for ( int ix = 1; ix <= _h->GetNbinsX(); ix++ ){
+				for ( int iy = 1; iy <= _h->GetNbinsY(); iy++ ){
+					for ( int iz = 1; iz <= _h->GetNbinsZ(); iz++ ){
+						int i = _h->GetBin( ix, iy, iz );
+						if (  i-1 >= values.size() ) continue;
+						_h->SetBinContent( i, values[i-1] );
+						if (  i-1 >= errors.size() ) continue;
+						_h->SetBinError( i, errors[i-1] );
+					}
+				}
+			}
+
+			return _h;
 		}
 
 		

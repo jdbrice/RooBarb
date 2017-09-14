@@ -46,6 +46,39 @@ namespace jdb{
 		this->isAttribute = rhs.isAttribute;
 	}
 
+
+	void XmlConfig::loadXmlString( string xml ){
+		map<string, string> empty_overrides;
+		loadXmlString( xml, empty_overrides );
+	}
+	void XmlConfig::loadXmlString( string xml, map<string, string> overrides ){
+		DEBUGC( "Loading XML data from string\n" << xml );
+		this->filename = "";
+
+		RapidXmlWrapper rxw;
+		rxw.parseXmlString( xml );
+		rxw.getMaps( &data, &isAttribute, &nodeExists );
+
+		// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
+		applyOverrides( overrides );
+
+		int nNotFound = parseIncludes();
+		int nTries = 0;
+		while ( nNotFound >= 1 && nTries < 1 ){
+			nTries++;
+			int nNotFoundBefore = nNotFound;
+			nNotFound = parseIncludes();
+			// check to see if we are making progress (for dependencies)
+			// if we are then don't bail out
+			if ( nNotFound < nNotFoundBefore ) nTries = 0;
+
+		}
+
+		// Apply again to really override any includes
+		applyOverrides( overrides );
+
+	}
+
 	void XmlConfig::loadFile( string _filename ){
 		map<string, string> empty_overrides;
 		loadFile( _filename, empty_overrides );
@@ -999,6 +1032,49 @@ namespace jdb{
 		return nFound;
 	}
 
+	void XmlConfig::include( XmlConfig otherCfg, string path, bool overwrite ){
+
+		auto d = otherCfg.getDataMap();
+		auto e = otherCfg.getNodeExistMap();
+		auto a = otherCfg.getIsAttributeMap();
+
+		map<string, string> d2;
+		map<string, bool> e2;
+		map<string, bool> a2;
+		// probably a better way!
+
+		string pp = sanitize( path );
+		// prepend the path to the maps to make them scoped
+		for ( auto kv : d ){
+			// INFOC( "d[" << kv.first << "] -> d[ " << pp << pathDelim << kv.first << " ] = " << kv.second );
+			d2[ pp + pathDelim + kv.first ] = kv.second;
+		}
+		for ( auto kv : e ){
+			e2[ pp + pathDelim + kv.first ] = kv.second;
+		}
+		for ( auto kv : a ){
+			a2[ pp + pathDelim + kv.first ] = kv.second;
+		}
+
+		// i chose to name variable overwrite to make it clear what the user is requesting when it is used
+		merge( &d2, &e2, &a2, !overwrite );
+		// this makes sure we dont have orphaned nodes
+		ensureLineage( path );
+
+	}
+
+	void XmlConfig::ensureLineage( string path ){
+		string p = sanitize( path );
+		int depth = depthOf( p );
+
+		for ( int i = 0; i <= depth; i++  ){
+			string dp = pathToDepth( p, i );
+			INFOC( "path[depth=" << i << "] = " << dp );
+			if ( false == exists( dp ) )
+				addNode( dp );
+		}
+	}
+
 	int XmlConfig::parseIncludes( string searchPath) {
 		DEBUG( classname(), " Looking for Include tags under : " << quote( searchPath ) );
 
@@ -1081,7 +1157,7 @@ namespace jdb{
 		return conflicts;
 	}
 
-	void XmlConfig::merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists ){
+	void XmlConfig::merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts ){
 
 
 		
@@ -1089,8 +1165,8 @@ namespace jdb{
 
 		string shortestConflict = "";
 		bool conflicts = conflictExists( _data, shortestConflict );
-
-		while( conflicts ){
+		INFOC( "Attempting to merge config, conflicts = " << bts( conflicts ) );
+		while( conflicts && resolveConflicts ){
 			map<string, string> _d;
 			map<string, bool> _ia;
 			map<string, bool> _e;
@@ -1138,6 +1214,7 @@ namespace jdb{
 			conflicts = conflictExists( _data, shortestConflict );
 		} // while
 
+		INFOC( "Conflicts resolved" );
 		for ( auto kv : *_data ){
 			this->data[ kv.first ] = kv.second;
 		}
@@ -1263,6 +1340,11 @@ namespace jdb{
 		data.erase( nodePath );
 		isAttribute.erase( nodePath );
 		nodeExists.erase( nodePath );
+	}
+
+	// just an alias
+	void XmlConfig::deleteAttribute( string path ){
+		deleteNode( path );
 	}
 
 	map<string, string> XmlConfig::makeOverrideMap( string _nodePath ){
