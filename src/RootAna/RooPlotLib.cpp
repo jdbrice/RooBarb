@@ -204,6 +204,11 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		else if ( ("xts" == option || "xtitlesize" == option ) ){
 			ax->SetTitleSize( fp0 );
 		}
+		else if ( ("xtp" == option || "xtitlepoint" == option ) ){
+			ax->SetTitleSize( fp0 / fontScale );
+		} else if (  "xtc" == option || "xtitlecenter" == option  ){
+			ax->CenterTitle();
+		}
 		// Label
 		else if ( ("xlo" == option || "xlabeloffset" == option )  ){
 			ax->SetLabelOffset( fp0 );
@@ -211,6 +216,9 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		else if ( ("xls" == option || "xlabelsize" == option ) ){
 			ax->SetLabelSize( fp0 );
 		}
+		else if ( ("xlp" == option || "xlabelpoint" == option ) ){
+			ax->SetLabelSize( fp0 / fontScale );
+		} 
 	
 
 		// Range
@@ -248,13 +256,21 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		else if ( ("yts" == option || "ytitlesize" == option ) ){
 			ay->SetTitleSize( fp0 );
 		}
+		else if ( ("ytp" == option || "ytitlepoint" == option ) ){
+			ay->SetTitleSize( fp0 / fontScale );
+		} else if (  "ytc" == option || "ytitlecenter" == option  ){
+			ay->CenterTitle();
+		}
 		// Label
 		else if ( ("ylo" == option || "ylabeloffset" == option )  ){
 			ay->SetLabelOffset( fp0 );
 		}
 		else if ( ("yls" == option || "ylabelsize" == option ) ){
 			ay->SetLabelSize( fp0 );
-		}	
+		}
+		else if ( ("ylp" == option || "ylabelpoint" == option ) ){
+			ay->SetLabelSize( fp0 / fontScale );
+		}
 
 		// Range
 		else if ( ("yrange" == option || "yr" == option )  ){
@@ -343,6 +359,8 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	// gStyle Options
 	if ( "stats" == option || "stat" == option || "optstat" == option){
 		gStyle->SetOptStat( ip0 );
+		if ( nullptr != h )
+			h->SetStats( ip0 );
 	}
 	if ( "fitbox" == option || "fit" == option || "optfit" == option){
 		gStyle->SetOptFit( ip0 );

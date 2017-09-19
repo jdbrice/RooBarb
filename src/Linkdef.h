@@ -17,6 +17,7 @@
 #pragma link C++ class jdb::XmlString+;
 #pragma link C++ class jdb::XmlBinnedData+;
 #pragma link C++ class jdb::XmlHistogram+;
+#pragma link C++ class jdb::XmlGraph+;
 #pragma link C++ class jdb::XmlPad+;
 #pragma link C++ class jdb::XmlCanvas+;
 

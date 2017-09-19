@@ -51,6 +51,8 @@ namespace jdb{
 
 	    shared_ptr<HistoBook> linkedBook;
 
+	    const float fontScale = 360.0f;
+
 
 	public:
 

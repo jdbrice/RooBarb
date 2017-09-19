@@ -32,25 +32,25 @@ namespace jdb{
 				if ( "" != _nodePath )
 					preNode = _cfg.cn(_nodePath);
 
-				int nGridX = _nGridX;
-				int nGridY = _nGridY;
+				float nGridX = _nGridX;
+				float nGridY = _nGridY;
 				x1 = _cfg.getFloat( ":x1", ndcFromGrid( _cfg.getFloat( ":gx1", 0 ), nGridX ) );
 				x2 = _cfg.getFloat( ":x2", ndcFromGrid( _cfg.getFloat( ":gx2", 0 ), nGridX ) );
 
 				y1 = _cfg.getFloat( ":y1", ndcFromGrid( _cfg.getFloat( ":gy1", 0 ), nGridY ) );
 				y2 = _cfg.getFloat( ":y2", ndcFromGrid( _cfg.getFloat( ":gy2", 0 ), nGridY ) );
 
-				if ( _cfg.exists( ":gx" ) && _cfg.getIntVector( ":gx" ).size() >=2 ){
-					int gx1 = _cfg.getIntVector( ":gx" )[0];
-					int gx2 = _cfg.getIntVector( ":gx" )[1];
+				if ( _cfg.exists( ":gx" ) && _cfg.getFloatVector( ":gx" ).size() >=2 ){
+					float gx1 = _cfg.getFloatVector( ":gx" )[0];
+					float gx2 = _cfg.getFloatVector( ":gx" )[1];
 
 					x1 = ndcFromGrid( gx1, nGridX );
 					x2 = ndcFromGrid( gx2, nGridX );
 				}
 
-				if ( _cfg.exists( ":gy" ) && _cfg.getIntVector( ":gy" ).size() >=2 ){
-					int gy1 = _cfg.getIntVector( ":gy" )[0];
-					int gy2 = _cfg.getIntVector( ":gy" )[1];
+				if ( _cfg.exists( ":gy" ) && _cfg.getFloatVector( ":gy" ).size() >=2 ){
+					float gy1 = _cfg.getFloatVector( ":gy" )[0];
+					float gy2 = _cfg.getFloatVector( ":gy" )[1];
 
 					y1 = ndcFromGrid( gy1, nGridY );
 					y2 = ndcFromGrid( gy2, nGridY );

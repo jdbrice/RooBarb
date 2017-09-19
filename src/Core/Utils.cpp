@@ -102,6 +102,15 @@ namespace jdb{
 	 	}
 	 	return str;
 	 }
+	std::string vts( vector<float> v ){
+		string str = "";
+		string delim = "";
+		for ( double i : v ){
+			str += delim + dts(i);
+			delim=", ";
+		}
+		return str;
+	}
 
 	std::string vts( vector<string> v ){
 		string str = "";

@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "IObject.h"
 #include "HistoBins.h"
+#include "HistoBook.h"
 
 // STL
 #include <memory>
