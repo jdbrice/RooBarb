@@ -17,7 +17,8 @@ namespace jdb {
 	}
 
 	void XmlFunction::set( XmlConfig &cfg, string nodePath, string pMod, string eMod, string formMod, string covMod, string nameMod ){
-
+		INFOC( "nodePath=" << nodePath << ", pMod=" <<pMod << ", eMod=" << eMod <<", func="<<formMod  );
+		
 		string name = cfg.getXString( nodePath + nameMod, "xmlfunction_" + ts(instances) );
 		
 		string ocn = cfg.cn( nodePath + ":" );

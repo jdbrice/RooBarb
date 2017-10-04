@@ -115,6 +115,9 @@ namespace jdb {
 		void loadFile( string filename );
 		void loadFile( string filename, map<string, string> overrides );
 
+		void loadXmlString( string xml );
+		void loadXmlString( string xml, map<string, string> overrides );
+
 		/* Gets the filename of the current XML file loaded into memory
 		 *
 		 * @return 	name of current file
@@ -223,6 +226,7 @@ namespace jdb {
 		 */
 		string getXString( string nodePath, string def = "" ) const;
 
+		vector<string> getStringVector( string nodePath ) const;
 		/* Gets a vector of strings from a comma delimeter list
 		 * @nodePath Path to node. See getString.
 		 * Gets a vector from a comma delimeted list. 
@@ -230,9 +234,10 @@ namespace jdb {
 		 *
 		 * @return A vector of strings or an empty vector if the node DNE
 		 */
-		vector<string> getStringVector( string nodePath, string defaultVal = "", int defaultLength = 0 ) const;
-		// AMBIGUOUS!!!
-		// vector<string> getStringVector( string nodePath, vector<string> defaultVals ) const;
+		vector<string> getStringVector( string nodePath, string defaultVal, int defaultLength ) const;
+		
+		// pass a default vector in as an initializer list etc.
+		vector<string> getStringVector( string nodePath, vector<string> defaultVals ) const;
 
 		/* Gets a node or attribute as integer data
 		 * @nodePath Path to node. See getString(...)
@@ -562,8 +567,21 @@ namespace jdb {
 		}
 
 
+		void include( XmlConfig otherXfg, string p = "", bool overwrite = false );
+
+		map<string, string> getDataMap(  ) const { return data; }
+		map<string, bool> getNodeExistMap(  ) const { return nodeExists; }
+		map<string, bool> getIsAttributeMap(  ) const { return isAttribute; } 
+
+		// Adding content
+		void addNode( string nodePath, string value="" );
+		void deleteNode( string nodePath );
+		void addAttribute( string nodePath, string value="" );
+		void deleteAttribute( string path );
+
 	protected:
 
+		void ensureLineage( string path );
 		// A manual case lowing function
 		string manualToLower( string str ) const;
 		
@@ -591,7 +609,7 @@ namespace jdb {
 		// @return 	number of includes that could not be resolved
 		int parseIncludes( string nodePath = "" );
 		int unprocessedIncludes( string nodePath = "" );
-		void merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists );
+		void merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts = true  );
 		bool conflictExists( map<string, string> *_data, string &shortestConflict );
 
 		bool passConditional( string cond, string nodePath ) const;
@@ -601,10 +619,7 @@ namespace jdb {
 		int pathIndex( string _in ) const;
 
 
-		// Adding content
-		void addNode( string nodePath, string value="" );
-		void deleteNode( string nodePath );
-		void addAttribute( string nodePath, string value="" );
+
 
 
 		// Override content from node after include when used in conjunction with applyOverrides

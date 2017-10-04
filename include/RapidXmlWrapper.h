@@ -22,23 +22,34 @@ class RapidXmlWrapper
 protected:
 	string configFile;
 	string fname;
+	char* doc_string = nullptr;
+
+	bool good = false;
 
 	xml_document<> doc;
 public:
-	RapidXmlWrapper( string filename = "config.xml" ){
+	RapidXmlWrapper(){
+		DEBUG(  "RapidXmlWrapper", "()" );
+		pathDelim = '.';
+		attrDelim = ':';
+		indexOpenDelim = "[";
+		indexCloseDelim = "]";
+		equalDelim = '=';
+	}
+	RapidXmlWrapper( string filename ){
 
         DEBUG( "RapidXmlWrapper", "( filename=" << filename << " )" )
 		fname = filename;
 		configFile = getFileContents( filename.c_str() );
+		parseXmlString( configFile );
+		// char* cstr = new char[configFile.size() + 1];  	// Create char buffer to store string copy
+	 //  	strcpy (cstr, configFile.c_str());             		// Copy string into char buffer
 
-		char* cstr = new char[configFile.size() + 1];  	// Create char buffer to store string copy
-	  	strcpy (cstr, configFile.c_str());             		// Copy string into char buffer
-
-	  	try {
-	  		doc.parse<0>(cstr);
-	  	} catch ( exception &e ){
-	  		cout << "Could not parse " << filename << " : " << e.what() << endl;
-	  	}
+	 //  	try {
+	 //  		doc.parse<0>(cstr);
+	 //  	} catch ( exception &e ){
+	 //  		cout << "Could not parse " << filename << " : " << e.what() << endl;
+	 //  	}
 
 	  	pathDelim = '.';
 		attrDelim = ':';
@@ -47,8 +58,29 @@ public:
 		equalDelim = '=';
 
 	}
-	~RapidXmlWrapper(){}
+	~RapidXmlWrapper(){
+		if ( doc_string != nullptr ){
+			delete[] doc_string;
+			doc_string = nullptr;
+		}
+	}
 
+	void parseXmlString( string xml ){
+		if ( doc_string != nullptr ){
+			delete[] doc_string;
+			doc_string = nullptr;
+		}
+		doc_string = new char[xml.size() + 1];  	// Create char buffer to store string copy
+		strcpy (doc_string, xml.c_str());             		// Copy string into char buffer
+
+		try {
+			doc.parse<0>(doc_string);
+			good = true;
+		} catch ( exception &e ){
+			cout << "Could not parse xml string : " << e.what() << endl;
+		}
+
+	}
 
 	string getFileContents(const char *filename){
 		ifstream in(filename, ios::in | ios::binary);
@@ -142,7 +174,10 @@ public:
 
 	void makeMap( xml_node<> * node, string cp, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 		// DEBUG( "RapidXmlWrapper", "child_name" )
-
+		if ( false == good ) {
+			cerr << "RapidXmlWrapper :: ERROR -> doc root invalid" << endl;
+			return;
+		}
 		map< string, int > index;
 		for (xml_node<> *child = node->first_node(); child; child = child->next_sibling() ){
 		    string nodeName = child->name();

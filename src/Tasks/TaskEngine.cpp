@@ -8,7 +8,7 @@ TaskEngine::TaskEngine( int argc, char *argv[], string defaultType ){
 
 		getCmdLineConfigOverrides( argc, argv );
 		// log everything for the moment
-		Logger::setGlobalLogLevel( "info" );
+		Logger::setGlobalLogLevel( "All" );
 
 
 		if ( argc >= 2 ){
@@ -23,6 +23,8 @@ TaskEngine::TaskEngine( int argc, char *argv[], string defaultType ){
 			INFO( classname(), "Loading TaskEngine config : " << argv[1] );
 			if ( !fileExists( argv[1] ) ){
 				ERROR( classname(), "Cannot load " << argv[1] << ": File DNE" );
+			} else if ( string(argv[1]).find(".xml") == string::npos ){
+				ERROR( classname(), "Not an XML file" );
 			} else {
 				// passing as second arg here loads the overrides BEFORE evaluating include URLS
 				config.loadFile( argv[1], cmdLineConfig );
@@ -96,7 +98,7 @@ void TaskEngine::runTasks( ){
 			ERROR( classname(), "TaskFactory::registerTaskRunner<" << _defaultType << ">( \""<< _defaultType <<"\" );" );
 			return;
 		}
-
+		config.applyOverrides( cmdLineConfig );
 		taskRunner->init( config, "" );
 		taskRunner->run();
 
@@ -106,7 +108,7 @@ void TaskEngine::runTasks( ){
 
 }// runTasks
 
-void TaskEngine::getOverrideFromString( string s, string &path, string &value ){
+void TaskEngine::getOverrideFromString( string s, string &path, string &value, int iarg ){
 	if ( 0 == s.compare( 0, 2, "--" ) ){
 		vector<string> parts = split( s, '=' );
 		if ( parts.size() <= 1 ) return;
@@ -114,6 +116,7 @@ void TaskEngine::getOverrideFromString( string s, string &path, string &value ){
 		path = parts[0].substr( 2 );
 		value = parts[1];
 	}
+	
 	return;
 }
 
@@ -124,9 +127,13 @@ void TaskEngine::getCmdLineConfigOverrides( int argc, char * argv[] ){
 		string path = "";
 		string value = "";
 		
-		getOverrideFromString( v, path, value );
+		getOverrideFromString( v, path, value, i );
 		if ( path != "" )
 			cmdLineConfig[ path ] = value;
+		
+		cmdLineConfig[ "argc" ] = ts(argc);
+		cmdLineConfig[ "arg[" + ts(i) + "]" ] = argv[i];
+
 
 		// if ( 0 == v.compare( 0, 2, "--" ) ){
 			

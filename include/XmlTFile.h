@@ -6,6 +6,8 @@
 
 #include "XmlString.h"
 
+// ROOT
+#include "TFile.h"
 
 namespace jdb {
 

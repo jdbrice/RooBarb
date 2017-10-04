@@ -100,7 +100,7 @@ namespace jdb{
                 string name = cfg.getString( ":name", cfg.getString( ":n", "" ) );
                 DEBUGC( "Creating Pad named " << name );
                 if ( "" != name )
-                    pads[ name ] = shared_ptr<XmlPad>( new XmlPad( cfg, "", nRow, nCol ) );
+                    pads[ name ] = shared_ptr<XmlPad>( new XmlPad( cfg, "", nCol, nRow ) );
             }
 
         }
