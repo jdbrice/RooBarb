@@ -54,7 +54,7 @@ namespace jdb{
 			
 			h1 = shared_ptr<TH1>( (TH1*)f->Get( name.c_str() ) );
 			if ( nullptr == h1 ){
-				ERROR( classname(), "Could not load \"" << name << "\" from file:" << url );
+				// ERRORC( classname(), "Could not load \"" << name << "\" from file:" << url );
 				return;
 			}
 

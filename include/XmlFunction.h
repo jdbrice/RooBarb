@@ -55,7 +55,7 @@ namespace jdb{
 			if ( pNameToIndex.count( name ) > 0 && pNameToIndex[ name ] >= 0 )
 				func->SetParameter( pNameToIndex[ name ], value );
 			else {
-				ERROR( classname(), "Cannot set parameter : " << quote( name ) );
+				// ERROR( classname(), "Cannot set parameter : " << quote( name ) );
 			}
 		}
 
