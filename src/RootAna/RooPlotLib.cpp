@@ -523,6 +523,15 @@ int jdb::RooPlotLib::color( string color ) {
 
 	if ( color[0] == '#' && color.size() == 7 ){
 		return TColor::GetColor( color.c_str() );
+	} else if ( color[0] == '#' && color.size() == 4 ){
+		string colstr = "#";
+		colstr += color[1];
+		colstr += color[1];
+		colstr += color[2];
+		colstr += color[2];
+		colstr += color[3];
+		colstr += color[3];
+		return TColor::GetColor( colstr.c_str() );
 	}
 	return -1;
 }
