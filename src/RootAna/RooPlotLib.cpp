@@ -219,6 +219,11 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		else if ( ("xlp" == option || "xlabelpoint" == option ) ){
 			ax->SetLabelSize( fp0 / fontScale );
 		} 
+		else if ( "xta" == option || "xtitlealign" == option ){
+			if ("center" == p0) {
+				ax->CenterTitle( true );
+			}
+		}
 	
 
 		// Range
@@ -270,6 +275,11 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		}
 		else if ( ("ylp" == option || "ylabelpoint" == option ) ){
 			ay->SetLabelSize( fp0 / fontScale );
+		}
+		else if ( "yta" == option || "ytitlealign" == option ){
+			if ("center" == p0) {
+				ay->CenterTitle( true );
+			}
 		}
 
 		// Range
