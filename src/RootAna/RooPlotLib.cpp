@@ -502,7 +502,7 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 }
 
 RooPlotLib &jdb::RooPlotLib::draw( string appendDrawOpt ){
-	drawOption += " same";
+	drawOption += " " + appendDrawOpt;
 	return draw();
 }
 
