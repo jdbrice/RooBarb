@@ -90,6 +90,9 @@ namespace jdb{
 		canvas->Clear();
 		canvas->Divide( dx, dy, marginX, marginY );
 		cd( 1 );
+
+		// make the global margins set
+		margins( );
 	}
 
 	void Reporter::cd( int pad ){

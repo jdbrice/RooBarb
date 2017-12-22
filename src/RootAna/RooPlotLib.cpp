@@ -219,6 +219,11 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		else if ( ("xlp" == option || "xlabelpoint" == option ) ){
 			ax->SetLabelSize( fp0 / fontScale );
 		} 
+		else if ( "xta" == option || "xtitlealign" == option ){
+			if ("center" == p0) {
+				ax->CenterTitle( true );
+			}
+		}
 	
 
 		// Range
@@ -270,6 +275,11 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		}
 		else if ( ("ylp" == option || "ylabelpoint" == option ) ){
 			ay->SetLabelSize( fp0 / fontScale );
+		}
+		else if ( "yta" == option || "ytitlealign" == option ){
+			if ("center" == p0) {
+				ay->CenterTitle( true );
+			}
 		}
 
 		// Range
@@ -502,7 +512,7 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 }
 
 RooPlotLib &jdb::RooPlotLib::draw( string appendDrawOpt ){
-	drawOption += " same";
+	drawOption += " " + appendDrawOpt;
 	return draw();
 }
 
@@ -523,6 +533,15 @@ int jdb::RooPlotLib::color( string color ) {
 
 	if ( color[0] == '#' && color.size() == 7 ){
 		return TColor::GetColor( color.c_str() );
+	} else if ( color[0] == '#' && color.size() == 4 ){
+		string colstr = "#";
+		colstr += color[1];
+		colstr += color[1];
+		colstr += color[2];
+		colstr += color[2];
+		colstr += color[3];
+		colstr += color[3];
+		return TColor::GetColor( colstr.c_str() );
 	}
 	return -1;
 }

@@ -35,7 +35,7 @@ common_env = Environment( variables = vars )
 common_env['ENV']['TERM'] = os.environ['TERM']
 Help(vars.GenerateHelpText(common_env))
 
-print "RELEASE =", common_env[ "RELEASE" ]
+print( "RELEASE =", common_env[ "RELEASE" ])
 if int(common_env[ "RELEASE" ]) >= 1 :
 	common_env[ "LL" ] = 30
 

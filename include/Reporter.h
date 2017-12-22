@@ -38,6 +38,24 @@ namespace jdb {
 
 		virtual const char * classname() const { return "Reporter"; }
 
+
+		void margins(){
+			cout << "MARGINS( " << mt << ", " << mr << ", " << mb << ", " << ml << ")" << endl;
+			canvas->cd(0);
+			canvas->SetLeftMargin( this->ml );
+			canvas->SetTopMargin( this->mt );
+			canvas->SetRightMargin( this->mr );
+			canvas->SetBottomMargin( this->mb );
+		}
+		void margins( float mt, float mr, float mb, float ml ){
+
+			this->mt = mt;
+			this->mr = mr;
+			this->mb = mb;
+			this->ml = ml;
+			margins();
+		}
+
 		/* Creates a new page in the report
 		 * @dx The number of divisions horizontally
 		 * @dy The number of divisions vertically
@@ -105,6 +123,8 @@ namespace jdb {
 		// Number of instances of the Reporter running
 		static int instances;
 		bool isOpen;
+
+		float mt, mr, mb, ml;
 
 	};
 	
