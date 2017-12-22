@@ -720,7 +720,10 @@ namespace jdb{
 		// Query String _qs :
 		// 1) nodePath* - all nodepaths matching base, star optional -> like child selector
 		// 
-		// 
+		// 2) query test on attribute, something like:
+		// query string = "FDS[0].DeltaTOF[0].XmlHistogram{name==signal}"
+		// will search all XmlHistogram nodes under FDS[0].DeltaTOF[0].* for the first one 
+		// with attribute "name" == "signal"
 		
 		XmlString xstr;
 		vector<string> conds = xstr.tokens( _qs );
@@ -732,7 +735,7 @@ namespace jdb{
 		vector<string> attrs = split( npc, attrDelim );
 
 		if ( attrs.size() >= 1 )
-			np = attrs[0];
+			np = stripIndex( sanitize( attrs[0] ) );
 		if ( attrs.size() >= 2)
 			attr = attrDelim + attrs[1];
 
@@ -754,6 +757,7 @@ namespace jdb{
 				continue;
 			
 			string parent = p.substr( 0, npl );
+			DEBUGC( "checking " << quote(np) << " against " << quote( parent ) << " from path " << quote( p ) );
 			if ( np == parent ){
 
 				if ( conds.size() < 1 )
