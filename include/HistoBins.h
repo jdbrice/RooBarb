@@ -20,6 +20,7 @@ using namespace std;
 
 #include "TMath.h"
 #include "TH2.h"
+#include "TH3.h"
 
 namespace jdb{
 
@@ -50,6 +51,36 @@ namespace jdb{
 				if ( i < _labels.size() )
 					_x->SetBinLabel( i+1, _labels[i].c_str() );
 			}
+		}
+
+		/* General purpose Rebins for 3D histo 
+		 * _hOld is the histogram with current binning and data
+		 * _hNew is a preconstructed but empty histogram with the new binning
+		 */
+		static void rebin3D( TH3* _hOld, TH3* _hNew ){
+			if ( nullptr == _hOld || nullptr == _hNew ) return;
+			TAxis *x = _hOld->GetXaxis();
+			TAxis *y = _hOld->GetYaxis();
+			TAxis *z = _hOld->GetZaxis();
+
+			for ( int k = 1; k <= z->GetNbins(); k++ ){
+				for ( int j = 1; j <= y->GetNbins(); j++ ){
+					for ( int i = 1; i <= x->GetNbins(); i++ ) {
+						_hNew->Fill( x->GetBinCenter(i), y->GetBinCenter(j), z->GetBinCenter(k), _hOld->GetBinContent( i, j, k ) );
+					}
+				}
+			}
+		} //rebin3D
+
+		/* Rebins a TH3 into new bins given by HistoBins
+		 * returns the rebinned TH3*
+		 * WARNING: 	uses TH3D by default, if you want more control make the histo yourself and use above method
+		 * WARNING:		does not check for stupidity -> new bins and old bins are incompatible -> TODO: add this
+		 */
+		static TH3* rebin3D( string name, TH3* _hOld, HistoBins &_bx, HistoBins &_by, HistoBins &_bz ){
+			TH3D* hNew = new TH3D( name.c_str(), "", _bx.nBins(), _bx.bins.data(), _by.nBins(), _by.bins.data(), _bz.nBins(), _bz.bins.data() );
+			HistoBins::rebin3D( _hOld, hNew );
+			return hNew;
 		}
 
 		/* General purpose Rebins for 2D histo 

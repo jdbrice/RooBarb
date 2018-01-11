@@ -376,6 +376,16 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		gStyle->SetOptFit( ip0 );
 	}
 
+	if ( "theta" == option && nullptr != gPad){
+		gPad->SetTheta( fp0 );
+		gPad->Update();
+	}
+
+	if ( "phi" == option && nullptr != gPad){
+		gPad->SetPhi( fp0 );
+		gPad->Update();
+	}
+
 
 	// Line attributes
 	TAttLine * line = dynamic_cast<TAttLine*>( styling );
