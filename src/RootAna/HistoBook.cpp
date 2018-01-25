@@ -2,6 +2,7 @@
 
 #include "HistoBook.h"
 #include "Logger.h"
+#include "RooPlotLib.h"
 
 // ROOT
 #include "TKey.h"
@@ -451,6 +452,10 @@ namespace jdb{
 							tmp->GetXaxis()->SetTitle( xTtile.c_str() );
 						if ( "" != yTtile )
 							tmp->GetYaxis()->SetTitle( yTtile.c_str() );
+
+						// apply styling if given
+						RooPlotLib rpl;
+						rpl.style( tmp ).set( config, nodeName );
 
 					} else if ( config.exists( nodeName + ":bins_x" ) || config.exists( nodeName + ":bins_y" ) || config.exists( nodeName + ":bins_z" ) ) {
 						ERROR( classname(), "could not make histogram : " << vhName );
