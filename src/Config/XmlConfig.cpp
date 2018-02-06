@@ -41,7 +41,8 @@ namespace jdb{
 		DEBUG(classname(), "Copying NodeExist map" );
 		this->nodeExists = rhs.nodeExists;
 		DEBUG(classname(), "Copying Data map" );
-		this->data = rhs.data;
+		this->data         = rhs.data;
+		this->orderedPaths = rhs.orderedPaths;
 		DEBUG(classname(), "Copying Attribute map" );
 		this->isAttribute = rhs.isAttribute;
 	}
@@ -539,7 +540,9 @@ namespace jdb{
 		vector<string> paths;
 		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
 			// const string &key = it->first; 
+		cout << "orderedPaths.size()=" << orderedPaths.size() << endl; 
 		for ( const string key : orderedPaths ) {
+			cout << "key : "  << key << endl;
 			// reject self
 			if ( key == nodePath )
 				continue;
