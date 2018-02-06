@@ -540,9 +540,9 @@ namespace jdb{
 		vector<string> paths;
 		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
 			// const string &key = it->first; 
-		cout << "orderedPaths.size()=" << orderedPaths.size() << endl; 
+		// cout << "orderedPaths.size()=" << orderedPaths.size() << endl; 
 		for ( const string key : orderedPaths ) {
-			cout << "key : "  << key << endl;
+			// cout << "key : "  << key << endl;
 			// reject self
 			if ( key == nodePath )
 				continue;
