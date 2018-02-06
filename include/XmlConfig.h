@@ -40,6 +40,7 @@ namespace jdb {
 		
 		// data - map of node path to string representation
 		map<string, string> data;
+		vector<string> orderedPaths;
 
 		// does the nodepath point to an attribute value
 		map<string, bool> isAttribute;
@@ -609,7 +610,7 @@ namespace jdb {
 		// @return 	number of includes that could not be resolved
 		int parseIncludes( string nodePath = "" );
 		int unprocessedIncludes( string nodePath = "" );
-		void merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts = true  );
+		void merge( vector<string> *_opaths, map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts = true  );
 		bool conflictExists( map<string, string> *_data, string &shortestConflict );
 
 		bool passConditional( string cond, string nodePath ) const;

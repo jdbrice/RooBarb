@@ -16,6 +16,45 @@ using namespace rapidxml;
 #include "Logger.h"
 using namespace jdb;
 
+
+template <typename key_type, typename mapped_type>
+class NodeMap {
+public:
+	typedef std::pair<const key_type, mapped_type> value_type;
+
+	NodeMap(){
+
+	}
+	~NodeMap(){
+
+	}
+
+	vector<key_type> keys;
+	vector<mapped_type> vals;
+
+	bool has_key(const key_type key) {
+		if ( std::find( keys.begin(), keys.end(), key ) != keys.end() )
+			return true;
+		return false;
+	}
+
+	size_t index_of( const key_type key ){
+		size_t pos = std::find(keys.begin(), keys.end(), key) - keys.begin();
+		return pos;
+	}
+	
+	mapped_type &operator[](const key_type key){
+		if ( has_key( key ) ){
+			return vals[ index_of( key ) ];
+		}
+
+		mapped_type t;
+		return t;
+	}
+
+};
+
+
 class RapidXmlWrapper
 {
 
@@ -158,21 +197,21 @@ public:
 
 
 
-	void getMaps( map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
+	void getMaps( vector<string> *keys, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 
 		xml_node<> *node = doc.first_node();
-		makeMap( node, "", data, isAttribute, exists );
+		makeMap( node, "", keys, data, isAttribute, exists );
 
 	}
 
-	void includeMaps( string context, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
+	void includeMaps( string context, vector<string> *keys, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 
 		xml_node<> *node = doc.first_node();
-		makeMap( node, context, data, isAttribute, exists );
+		makeMap( node, context, keys, data, isAttribute, exists );
 
 	}
 
-	void makeMap( xml_node<> * node, string cp, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
+	void makeMap( xml_node<> * node, string cp, vector<string> *keys, map<string, string> *data, map<string, bool> * isAttribute, map<string, bool> *exists ){
 		// DEBUG( "RapidXmlWrapper", "child_name" )
 		if ( false == good ) {
 			cerr << "RapidXmlWrapper :: ERROR -> doc root invalid" << endl;
@@ -183,6 +222,8 @@ public:
 		    string nodeName = child->name();
 		    if ( "" == nodeName )
 		    	continue;
+
+		    // cout << "nodeName = " << child->name() << endl;
 
 		    // if ( !index[ nodeName ] )
 		    if ( index.count( nodeName ) <= 0 )
@@ -212,6 +253,7 @@ public:
 				// (*data)[path] = "";
 			// DEBUG( "RapidXmlWrapper", "["<< path << "]=<" << nValue << ">" );
 			(*data)[path] = nValue;
+			(*keys).push_back( path );
 
 			/**
 			 * Get attributes
@@ -224,11 +266,12 @@ public:
 
 				string aPath = path + attrDelim + aName;
 				(*data)[ aPath ] = aVal;
+				(*keys).push_back( aPath );
 				(*isAttribute)[ aPath ] = true;
 				(*exists)[ aPath ] = true;
 			}
 
-			makeMap( child, path, data, isAttribute, exists );
+			makeMap( child, path, keys, data, isAttribute, exists );
 
 		}
 

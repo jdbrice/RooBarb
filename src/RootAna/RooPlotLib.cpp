@@ -223,6 +223,9 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 			if ("center" == p0) {
 				ax->CenterTitle( true );
 			}
+		} else  if ( "topxaxis" == option || "topx" == option ){
+			if (nullptr != gPad)
+				gPad->SetTickx( ip0 );
 		}
 	
 
@@ -280,6 +283,9 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 			if ("center" == p0) {
 				ay->CenterTitle( true );
 			}
+		} else  if ( "rightyaxis" == option || "righty" == option ){
+			if (nullptr != gPad)
+				gPad->SetTicky( ip0 );
 		}
 
 		// Range
@@ -351,7 +357,12 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		}
 	}
 	
-	
+	if ( nullptr == gPad ){
+		if ( "logx" == option || "logy" == option || "logz" == option || "gridx" == option || "gridy" == option ){
+			ERRORC( "gPad is null, cannot set property" );
+		}
+	}
+
 	// SEMI - GLOBAL
 	// gPad Options
 	if ( "logx" == option && nullptr != gPad )
@@ -364,6 +375,9 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 		gPad->SetGridx( ip0 );
 	if ( "gridy" == option && nullptr != gPad )
 		gPad->SetGridy( ip0 );
+	
+
+	
 
 	// GLOBAL
 	// gStyle Options
@@ -510,6 +524,9 @@ RooPlotLib &jdb::RooPlotLib::draw(){
 		ERROR( classname(), "Invalid object" );
 		return *this;
 	}
+
+	if ( "none" == drawOption || "no" == drawOption )
+		return *this;
 
 	if ( true == drawNorm && static_cast<TH1*>( styling ) )
 		static_cast<TH1*>( styling )->DrawNormalized( drawOption.c_str() );

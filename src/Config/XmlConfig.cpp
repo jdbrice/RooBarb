@@ -57,7 +57,7 @@ namespace jdb{
 
 		RapidXmlWrapper rxw;
 		rxw.parseXmlString( xml );
-		rxw.getMaps( &data, &isAttribute, &nodeExists );
+		rxw.getMaps( &orderedPaths, &data, &isAttribute, &nodeExists );
 
 		// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
 		applyOverrides( overrides );
@@ -95,7 +95,7 @@ namespace jdb{
 #ifndef __CINT__
 			RapidXmlWrapper rxw( _filename );
 #endif
-			rxw.getMaps( &data, &isAttribute, &nodeExists );
+			rxw.getMaps( &orderedPaths, &data, &isAttribute, &nodeExists );
 
 			// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
 			applyOverrides( overrides );
@@ -537,8 +537,9 @@ namespace jdb{
 		
 
 		vector<string> paths;
-		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
-			const string &key = it->first; 
+		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+			// const string &key = it->first; 
+		for ( const string key : orderedPaths ) {
 			// reject self
 			if ( key == nodePath )
 				continue;
@@ -575,32 +576,33 @@ namespace jdb{
 			nodePath += pathDelim;
 	
 		vector<string> paths;
-		for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
+		for ( const string key : orderedPaths ) {
 
-			size_t found = it->first.find( attrDelim );
+			size_t found = key.find( attrDelim );
 			if ( found != string::npos )
 				continue;
 			
 			// reject self
-			if ( it->first == nodePath )
+			if ( key == nodePath )
 					continue;
-			string parent = (it->first).substr( 0, nodePath.length() );
+			string parent = (key).substr( 0, nodePath.length() );
 			
-			if ( nodePath == parent && (tag == tagName( it->first )) ){
+			if ( nodePath == parent && (tag == tagName( key )) ){
 				
 				if ( -1 == depth ) 
-					paths.push_back( it->first );
+					paths.push_back( key );
 				else {
-					int dp = depthOf( it->first );
+					int dp = depthOf( key );
 
 					if ( dp - npDepth > 0 && dp - npDepth <= depth ) 
-						paths.push_back( it->first );
+						paths.push_back( key );
 				}
 
 			} else if ( nodePath != parent ){
 				// DEBUG( "Rejected because parent does not match" )
 				// DEBUG( "parent=" << parent << ", shouldBe=" << nodePath )
-			} else if ( tag != tagName( it->first ) ){
+			} else if ( tag != tagName( key ) ){
 				// DEBUG( "Rejected because tag does not match" )
 				// DEBUG( "tag=" << tagName( it->first ) << ", shouldBe=" << tag )
 			}
@@ -1042,6 +1044,7 @@ namespace jdb{
 		auto e = otherCfg.getNodeExistMap();
 		auto a = otherCfg.getIsAttributeMap();
 
+		vector<string> op2;
 		map<string, string> d2;
 		map<string, bool> e2;
 		map<string, bool> a2;
@@ -1061,7 +1064,7 @@ namespace jdb{
 		}
 
 		// i chose to name variable overwrite to make it clear what the user is requesting when it is used
-		merge( &d2, &e2, &a2, !overwrite );
+		merge( &op2, &d2, &e2, &a2, !overwrite );
 		// this makes sure we dont have orphaned nodes
 		ensureLineage( path );
 
@@ -1113,11 +1116,12 @@ namespace jdb{
 				#endif
 
 				map<string, string> tmpData;
+				vector<string> tmpOrderedPaths;
 				map<string, bool> tmpIsAttribute;
 				map<string, bool> tmpNodeExists;
 				
-				rxw.includeMaps( pathToParent( path ), &tmpData,  &tmpIsAttribute, &tmpNodeExists );
-				merge( &tmpData,  &tmpIsAttribute, &tmpNodeExists );
+				rxw.includeMaps( pathToParent( path ), &tmpOrderedPaths, &tmpData,  &tmpIsAttribute, &tmpNodeExists );
+				merge( &tmpOrderedPaths, &tmpData,  &tmpIsAttribute, &tmpNodeExists );
 
 
 				applyOverrides( makeOverrideMap( path ) );
@@ -1161,10 +1165,15 @@ namespace jdb{
 		return conflicts;
 	}
 
-	void XmlConfig::merge( map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts ){
+	void XmlConfig::merge( vector<string> *_orderedPaths, map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts ){
 
 
-		
+		////////!!!!!!!!!!!!!!! TODO
+		/// ADD support for new ordered Paths!!!!!!
+		/// !!!!!
+		/// !!!!!
+		/// !!!!!
+		/// 
 
 
 		string shortestConflict = "";
