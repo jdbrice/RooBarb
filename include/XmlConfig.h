@@ -12,12 +12,14 @@
 #include <exception>
 #include <sstream>
 #include <map>
-#include <map>
+#include <unordered_map>
 #include <algorithm>
 #include <iomanip>
 #include <memory>
-#include <utility>      // std::pair, std::make_pair
+#include <utility>         // std::pair, std::make_pair
 #include <stdexcept>      // std::out_of_range
+
+#include <sys/stat.h>
 
 // Roobarb
 #include "Logger.h"
@@ -25,7 +27,8 @@
 	// Interfaces
 	#include "IObject.h"
 
-// #include "XmlString.h"
+
+
 
 namespace jdb {
 
@@ -35,20 +38,15 @@ namespace jdb {
 	{
 	protected:
 
-		// Node existance
-		map<string, bool> nodeExists;
-		
 		// data - map of node path to string representation
-		map<string, string> data;
-		vector<string> orderedPaths;
+		config_map data;
+		vector<string> orderedKeys;
 
-		// does the nodepath point to an attribute value
-		map<string, bool> isAttribute;
 		
 		// map<string, string> iterator
-		typedef map<string, string>::iterator map_it_type;
+		typedef config_map::iterator map_it_type;
 		// map<string, string> const iterator
-		typedef map<string, string>::const_iterator const_map_it_type;
+		typedef config_map::const_iterator const_map_it_type;
 
 		//Filename of the config file
 		string filename;
@@ -73,8 +71,10 @@ namespace jdb {
 
 		// Current node for relative path finding
 		string currentNode = "";
-
 		string lastNode = "";
+
+		// a builting nodepath string for passing around
+		string cat = "";
 
 		// shared_ptr<XmlString> xStr = nullptr;
 	public:
@@ -125,6 +125,15 @@ namespace jdb {
 		 */
 		string getFilename() const { return filename; }
 
+		bool isAttribute( string _in ) const;
+
+		void at( string np ){
+			cat = np;
+		}
+
+		string at() {
+			return cat;
+		}
 
 		/**
 		 * Sets the current node so that relative node paths can be used
@@ -568,19 +577,55 @@ namespace jdb {
 		}
 
 
-		void include( XmlConfig otherXfg, string p = "", bool overwrite = false );
+		// void include( XmlConfig otherXfg, string p = "", bool overwrite = false );
 
-		map<string, string> getDataMap(  ) const { return data; }
-		map<string, bool> getNodeExistMap(  ) const { return nodeExists; }
-		map<string, bool> getIsAttributeMap(  ) const { return isAttribute; } 
+		config_map getDataMap(  ) const { return data; }
+		vector<string> getOrderedKeys(  ) const { return orderedKeys; }
+		// map<string, bool> getNodeExistMap(  ) const { return nodeExists; }
+		// map<string, bool> getIsAttributeMap(  ) const { return isAttribute; } 
 
 		// Adding content
 		void addNode( string nodePath, string value="" );
-		void deleteNode( string nodePath );
+		size_t deleteNode( string nodePath );
 		void addAttribute( string nodePath, string value="" );
-		void deleteAttribute( string path );
+		bool deleteAttribute( string path );
 
 	protected:
+
+		size_t indexOf( string path ){
+			return find( orderedKeys.begin(), orderedKeys.end(), path) - orderedKeys.begin();
+		}
+
+		vector<string>::iterator iteratorOf( string path ){
+			return find( orderedKeys.begin(), orderedKeys.end(), path);
+		}
+
+		/* gets the index for a given tag up to that ordering in the ordered keys
+		 *
+		 * @path 	Path.To.Node
+		 */
+		size_t countTag( string path ){
+			return countTag( path, 0, orderedKeys.size() );
+		}
+
+		size_t countTag( string path, size_t start, size_t stop ) const;
+
+		/* Rewrites a key 
+		 * Also checks for children and attributes, rewriting them if needed
+		 *
+		 */
+		bool rewrite( string oldKey, string newKey );
+
+		/* rewriteKey
+		 *
+		 * Rewrites a single key
+		 */
+		bool rewriteKey( string oldKey, string newKey );
+
+		/* Increments tag indices
+		 *
+		 */
+		void incrementTagIndex( string path, string tagname, int n, size_t start, size_t stop );
 
 		void ensureLineage( string path );
 		// A manual case lowing function
@@ -596,6 +641,21 @@ namespace jdb {
 		// Allows string delimeter
 		pair<string, string> stringToPair( string &s, string delim  ) const;
 
+		string resolveFilename( string in ){
+			struct stat buffer;
+			bool exists = (stat (in.c_str(), &buffer) == 0);
+
+			if (exists)
+				return in;
+
+			string basePath = pathFromFilename( filename );
+
+			in = basePath + in;
+			exists = (stat (in.c_str(), &buffer) == 0);
+			if ( exists )
+				return in;
+			return "";
+		}
 
 
 		string pathFromFilename (const string& str) const {
@@ -610,7 +670,7 @@ namespace jdb {
 		// @return 	number of includes that could not be resolved
 		int parseIncludes( string nodePath = "" );
 		int unprocessedIncludes( string nodePath = "" );
-		void merge( vector<string> *_opaths, map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts = true  );
+		void merge( vector<string> *_opaths, map<string, string> *_data, bool resolveConflicts = true  ){}
 		bool conflictExists( map<string, string> *_data, string &shortestConflict );
 
 		bool passConditional( string cond, string nodePath ) const;

@@ -580,8 +580,12 @@ namespace jdb{
 		DEBUG( classname(), "fullPath=\"" << fullPath << "\"" );
 
 		if ( !exists( name, sdir ) ){
-			WARN( classname(), fullPath  << " Does Not Exist " );
-			return nullHisto;
+			if ( false == strict ){
+				WARN( classname(), fullPath  << " Does Not Exist " );
+				return nullHisto;
+			} else {
+				return nullptr;
+			}
 		}
 
 		return (TH1*)book[ fullPath ];

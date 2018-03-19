@@ -1,5 +1,5 @@
 #include "XmlConfig.h"
-#include <sys/stat.h>
+
 
 
 #include "XmlString.h"
@@ -18,8 +18,6 @@ namespace jdb{
 
 		setDefaults();
 		loadFile( filename );
-		
-		// typedef map<string, string>::iterator map_it_type;
 	}
 
 	XmlConfig::XmlConfig(){
@@ -38,13 +36,9 @@ namespace jdb{
 		DEBUG( classname(), "Copying filename" );
 		this->filename = rhs.filename;
 
-		DEBUG(classname(), "Copying NodeExist map" );
-		this->nodeExists = rhs.nodeExists;
 		DEBUG(classname(), "Copying Data map" );
 		this->data         = rhs.data;
-		this->orderedPaths = rhs.orderedPaths;
-		DEBUG(classname(), "Copying Attribute map" );
-		this->isAttribute = rhs.isAttribute;
+		this->orderedKeys = rhs.orderedKeys;
 	}
 
 
@@ -58,7 +52,7 @@ namespace jdb{
 
 		RapidXmlWrapper rxw;
 		rxw.parseXmlString( xml );
-		rxw.getMaps( &orderedPaths, &data, &isAttribute, &nodeExists );
+		rxw.makeMap( &orderedKeys, &data );
 
 		// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
 		applyOverrides( overrides );
@@ -84,6 +78,7 @@ namespace jdb{
 		map<string, string> empty_overrides;
 		loadFile( _filename, empty_overrides );
 	}
+
 	void XmlConfig::loadFile( string _filename, map<string, string> overrides ){
 		DEBUG( classname(), "Loading " << _filename );
 		
@@ -93,10 +88,10 @@ namespace jdb{
 		bool exists = (stat (_filename.c_str(), &buffer) == 0);
 	
 		if ( exists ){
-#ifndef __CINT__
+			#ifndef __CINT__
 			RapidXmlWrapper rxw( _filename );
-#endif
-			rxw.getMaps( &orderedPaths, &data, &isAttribute, &nodeExists );
+			#endif
+			rxw.makeMap( &orderedKeys, &data );
 
 			// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
 			applyOverrides( overrides );
@@ -136,13 +131,110 @@ namespace jdb{
 		indexCloseDelim = "]";
 		equalDelim = '=';
 		mapDelim = "::";
-
 	}
 
+	bool XmlConfig::isAttribute( string _in ) const {
+		// use rfind since we expect paths to be longer than attribute names
+		// should require less searching in general
+		string::size_type index = _in.rfind( attrDelim );
+		if ( string::npos != index ){
+			return true;
+		}
+		return false;
+	}
+
+	size_t XmlConfig::countTag( string path, size_t start, size_t stop ) const {
+		int myDepth = depthOf( path );
+		string tn = stripIndex( tagName( path ) );
+		size_t index = 0;
+
+		if ( stop > orderedKeys.size() )
+			stop = orderedKeys.size();
+		if ( start > orderedKeys.size() )
+			start = 0;
+
+
+		for ( size_t i = start; i < stop; i++ ){
+			if ( isAttribute( orderedKeys[i] ) )
+				continue;
+			int d = depthOf( orderedKeys[i] );
+			if ( d != myDepth )
+				continue;
+			string ttn = stripIndex( tagName( orderedKeys[i] ) );
+			if ( ttn == tn )
+				index++;
+		}
+		return index;
+	}
+
+	bool XmlConfig::rewrite( string oldKey, string newKey ){
+		if ( exists( oldKey ) == false )
+			return false;
+		if ( exists( newKey ) == true )
+			return false;
+
+		// take care of children first
+		for ( const string key : orderedKeys ) {
+			
+			if ( key == oldKey )
+				continue;
+			
+			string parent = (key).substr( 0, oldKey.length() );
+			if ( oldKey == parent ){
+				DEBUGC( key << " ---> " << newKey  << (key).substr( oldKey.length() ) );
+				rewriteKey( key, newKey + string((key).substr(oldKey.length())) );
+			}
+		}
+		DEBUGC( oldKey << " ---> " << newKey );
+		rewriteKey( oldKey, newKey );
+		return true;
+	}
+
+	bool XmlConfig::rewriteKey( string oldKey, string newKey ){
+		if ( exists( oldKey ) == false )
+			return false;
+		if ( exists( newKey ) == true )
+			return false;
+		size_t idx = indexOf( oldKey );
+		orderedKeys[ idx ] = newKey;
+		data[ newKey ] = data[ oldKey ];
+		data.erase( oldKey );
+		return true;
+	}
+
+	void XmlConfig::incrementTagIndex( string path, string tagname, int n, size_t start, size_t stop ){
+		if ( stop > orderedKeys.size() )
+			stop = orderedKeys.size();
+		if ( start > orderedKeys.size() )
+			start = 0;
+		int myDepth = depthOf( path );
+
+		vector<string> delete_nodes;
+		DEBUGC( path << ", " << tagname << ", " << start << ", " << stop );
+		for ( size_t i = stop; i >= start; i-- ){
+			int d = depthOf( orderedKeys[i] );
+			// DEBUGC( "myDepth = " << myDepth << ", depth = " << d );
+			if ( d != myDepth+1 )
+				continue;
+			if ( isAttribute( orderedKeys[i] ) )
+				continue;
+
+			string tn = stripIndex( tagName( orderedKeys[i] ) );
+			if ( tn != tagname )
+				continue;
+
+			string npath = incrementPath( orderedKeys[i], n );
+
+			if ( exists( npath ) ){
+				incrementTagIndex( path, tagname, 1, indexOf( npath ), orderedKeys.size() );
+			}
+			rewrite( orderedKeys[i], npath );
+		}
+	}
 
 	string XmlConfig::getRawString( string nodePath, string def ) const {
 		string snp = sanitize( currentNode + nodePath );
-		if ( nodeExists.count( snp ) >= 1 ){
+		if ( data.count( snp ) >= 1 ){
 			try{
 				return data.at( snp );
 			} catch (const std::out_of_range &oor ){
@@ -319,7 +411,14 @@ namespace jdb{
 		return (float) getDouble( nodePath, (double)def );
 	}
 
-
+	template <>
+	bool XmlConfig::get( string path ) const {
+		return getBool(path);
+	}
+	template <>
+	bool XmlConfig::get( string path, bool def ) const {
+		return getBool(path, def);
+	}
 	bool XmlConfig::getBool( string nodePath, bool def  ) const{
 
 		string str = getXString( nodePath );
@@ -344,12 +443,8 @@ namespace jdb{
 
 	bool XmlConfig::exists( string nodePath ) const{
 		string snp = sanitize( currentNode + nodePath );
-		try{
-			if( true == nodeExists.at( snp ) )
-				return true;
-		} catch ( std::out_of_range &oor ){
-			return false;
-		}
+		if ( data.count( snp ) > 0 )
+			return true;
 		return false;
 	}
 
@@ -531,24 +626,16 @@ namespace jdb{
 	}
 
 	vector<string> XmlConfig::childrenOf( string nodePath, int relDepth, bool attrs ) const {
-
 		nodePath = sanitize( nodePath );
-	
 		int npDepth = depthOf( nodePath );
-		
 
 		vector<string> paths;
-		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
-			// const string &key = it->first; 
-		// cout << "orderedPaths.size()=" << orderedPaths.size() << endl; 
-		for ( const string key : orderedPaths ) {
-			// cout << "key : "  << key << endl;
-			// reject self
+		for ( const string key : orderedKeys ) {
+			
 			if ( key == nodePath )
 				continue;
 
-			string::size_type found = key.find( attrDelim );
-			if ( found != string::npos && false == attrs )
+			if ( isAttribute( key ) && false == attrs )
 				continue;
 			
 			string parent = (key).substr( 0, nodePath.length() );
@@ -579,11 +666,10 @@ namespace jdb{
 			nodePath += pathDelim;
 	
 		vector<string> paths;
-		// for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
-		for ( const string key : orderedPaths ) {
+		
+		for ( const string key : orderedKeys ) {
 
-			size_t found = key.find( attrDelim );
-			if ( found != string::npos )
+			if ( isAttribute( key ) )
 				continue;
 			
 			// reject self
@@ -603,11 +689,7 @@ namespace jdb{
 				}
 
 			} else if ( nodePath != parent ){
-				// DEBUG( "Rejected because parent does not match" )
-				// DEBUG( "parent=" << parent << ", shouldBe=" << nodePath )
 			} else if ( tag != tagName( key ) ){
-				// DEBUG( "Rejected because tag does not match" )
-				// DEBUG( "tag=" << tagName( it->first ) << ", shouldBe=" << tag )
 			}
 		}
 		return paths;
@@ -615,10 +697,10 @@ namespace jdb{
 	}
 
 	string XmlConfig::basePath( string nodePath, bool keepAttribute ) const {
-    	DEBUG( classname(), "(nodePath=\"" << nodePath << "\", keepAttrs=" << bts( keepAttribute ) << ")" );
-    	string np = sanitize( nodePath );
+		DEBUG( classname(), "(nodePath=\"" << nodePath << "\", keepAttrs=" << bts( keepAttribute ) << ")" );
+		string np = sanitize( nodePath );
 
-    	// first split off any attributes
+		// first split off any attributes
 		vector<string> attr = split( np, attrDelim );
 		if ( attr.size() >= 1 )
 			np = attr[ 0 ];
@@ -631,6 +713,7 @@ namespace jdb{
 			if ( "" == p ) continue;
 			goodPaths.push_back( p );
 		}
+		
 		// rebuild as a fully sanitized and normalized path
 		string ret ="";
 		for ( unsigned long int i = 0; i < goodPaths.size(); i++ ){
@@ -646,44 +729,44 @@ namespace jdb{
 		}
 		
 		return ret;
-    }
+	}
 
-    string XmlConfig::join( std::vector<string> paths ) const {
-    	if ( paths.size() == 1 ){
-    		WARN( classname(), "Only one path given, returning unaltered" );
-    		for ( string p : paths ){
-    			return p;
-    		}
-    		return "";
-    	} else if ( paths.size() < 1 ){
-    		ERROR( classname(), "No paths given" );
-    		return "";
-    	} else {
+	string XmlConfig::join( std::vector<string> paths ) const {
+		if ( paths.size() == 1 ){
+			WARN( classname(), "Only one path given, returning unaltered" );
+			for ( string p : paths ){
+				return p;
+			}
+			return "";
+		} else if ( paths.size() < 1 ){
+			ERROR( classname(), "No paths given" );
+			return "";
+		} else {
 
-    		string full = "";
-    		unsigned long int count = 0;
-    		for ( string p : paths ){
-    			
-    			// keep the attribute only on the last one
-    			bool keepAttribute = false;
-    			if ( count >= paths.size() - 1 )
-    				keepAttribute = true; 
+			string full = "";
+			unsigned long int count = 0;
+			for ( string p : paths ){
+				
+				// keep the attribute only on the last one
+				bool keepAttribute = false;
+				if ( count >= paths.size() - 1 )
+					keepAttribute = true; 
 
-    			// get the base path
-    			string tmp = basePath( sanitize( p ), keepAttribute );
-    			if ( "" == tmp ) continue;
+				// get the base path
+				string tmp = basePath( sanitize( p ), keepAttribute );
+				if ( "" == tmp ) continue;
 
-    			if ( count > 0 )
-    				full += ( pathDelim + tmp );
-    			else 
-    				full += tmp;	// only first time
+				if ( count > 0 )
+					full += ( pathDelim + tmp );
+				else 
+					full += tmp;	// only first time
 
-    			count ++;
-    		}
-    		return full;
-    	}
-    	return "";
-    }
+				count ++;
+			}
+			return full;
+		}
+		return "";
+	}
 
 	vector< string > XmlConfig::attributesOf( string nodePath ) const{
 		nodePath = sanitize( nodePath ) + attrDelim;
@@ -822,7 +905,7 @@ namespace jdb{
 			for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
 				
 				try {
-					if ( isAttribute.at( it->first ) )
+					if ( isAttribute( it->first ) )
 						continue;				
 				} catch ( std::out_of_range &oor ){
 					// TODO: nothing?
@@ -862,7 +945,7 @@ namespace jdb{
 			for ( const_map_it_type it = data.begin(); it != data.end(); it++ ){
 
 				try {
-					if ( isAttribute.at( it->first ) )
+					if ( isAttribute( it->first ) )
 						continue;				
 				} catch ( std::out_of_range &oor ){
 					// TODO: nothing?
@@ -999,11 +1082,10 @@ namespace jdb{
 		}
 	}
 
-
 	string XmlConfig::dump() const {
 		string msg = "";
-		for ( auto kv : data ){
-			msg += quote(kv.first) + " : " + quote(kv.second) + "\n";
+		for ( size_t i = 0; i < orderedKeys.size(); i++ ){
+			msg += quote(orderedKeys[i]) + " : " + quote( data.at( orderedKeys[i] ) ) + "\n";
 		}
 		return msg;
 	}
@@ -1020,16 +1102,12 @@ namespace jdb{
 	}
 
 	void XmlConfig::add( string nodePath, string value ){
-		DEBUG( classname(), "(" << nodePath << " = " << value << ", currentNode=" << currentNode << " )" );
 		nodePath = sanitize( currentNode + nodePath );
-		bool isAttr = (nodePath.find( attrDelim )!=std::string::npos);
-
-		if( isAttr )
+		if( isAttribute( nodePath ) )
 			addAttribute( nodePath, value );
 		else
 			addNode( nodePath, value );
 	}
-
 
 	int XmlConfig::unprocessedIncludes( string nodePath ){
 		vector<string> allPaths = childrenOf( nodePath, "Include" );
@@ -1039,38 +1117,6 @@ namespace jdb{
 			nFound++;
 		}
 		return nFound;
-	}
-
-	void XmlConfig::include( XmlConfig otherCfg, string path, bool overwrite ){
-
-		auto d = otherCfg.getDataMap();
-		auto e = otherCfg.getNodeExistMap();
-		auto a = otherCfg.getIsAttributeMap();
-
-		vector<string> op2;
-		map<string, string> d2;
-		map<string, bool> e2;
-		map<string, bool> a2;
-		// probably a better way!
-
-		string pp = sanitize( path );
-		// prepend the path to the maps to make them scoped
-		for ( auto kv : d ){
-			// INFOC( "d[" << kv.first << "] -> d[ " << pp << pathDelim << kv.first << " ] = " << kv.second );
-			d2[ pp + pathDelim + kv.first ] = kv.second;
-		}
-		for ( auto kv : e ){
-			e2[ pp + pathDelim + kv.first ] = kv.second;
-		}
-		for ( auto kv : a ){
-			a2[ pp + pathDelim + kv.first ] = kv.second;
-		}
-
-		// i chose to name variable overwrite to make it clear what the user is requesting when it is used
-		merge( &op2, &d2, &e2, &a2, !overwrite );
-		// this makes sure we dont have orphaned nodes
-		ensureLineage( path );
-
 	}
 
 	void XmlConfig::ensureLineage( string path ){
@@ -1091,61 +1137,73 @@ namespace jdb{
 		int nNotFound = 0;
 		vector<string> allPaths = childrenOf( searchPath, "Include" );
 
-		DEBUG( classname(), "Found " << allPaths.size() << " Include Tag(s)" );
+		DEBUGC(  "Found " << allPaths.size() << " Include Tag(s)" );
 
 		for ( string path : allPaths ){
-			DEBUG( classname(), path );
-			DEBUG( classname(), "parent path: " << pathToParent( path ) );
+			DEBUGC( "is processed : " << getBool( path + ":processed", false ) );
+			if ( true == get<bool>( path + ":processed", false ) )
+				continue;
+			set( path +":processed", "true" );
 
-			if ( getBool( path + ":processed" ) ) continue;
-
-			string ifn = getXString( path + ":url" );
-			struct stat buffer;
-			bool exists = (stat (ifn.c_str(), &buffer) == 0);
-			DEBUG( classname(), "file " << ifn << " exists " << exists )
-
-			// if we can't find it from the path directly then try relative to base config path
-			if ( !exists ) { // try relative to this config file
-				string basePath = pathFromFilename( filename );
-				ifn = basePath + ifn;
-
-				exists = (stat (ifn.c_str(), &buffer) == 0);
-				DEBUG( classname(), "file " << ifn << " exists " << exists )
+			// get the location of this path before we change anything
+			auto it = find( orderedKeys.begin(), orderedKeys.end(), path);
+			int bd = depthOf( path );
+			int pathIndex = indexOf(path);
+			string rurl = resolveFilename( get<string>( path+":url" ) );
+			if ( "" == rurl ){
+				ERRORC( "Could not resolve include of " << get<string>( path+":url" ) );
+				set( path +":processed", "true" );
+				continue;
 			}
+			
+			DEBUGC( "Processing Include @ " << path << " url=" << rurl );
+			DEBUGC( "Include @ " << path << " with url = " << quote( rurl ) << " at depth " << bd );
+			DEBUGC( "At order index = " << indexOf( path ) );
+			RapidXmlWrapper rxw(  rurl  );
+			
+			map<string, size_t> unique_tag_index;
 
-			if ( exists ){
-				#ifndef __CINT__
-				RapidXmlWrapper rxw(  ifn  );
-				#endif
+			// map the indices at this level for whatever is already in the map
+			for ( auto kv : data ){
+				if ( depthOf(kv.first) > bd )
+					continue;
+				if ( indexOf( kv.first ) > pathIndex )
+					continue;
 
-				map<string, string> tmpData;
-				vector<string> tmpOrderedPaths;
-				map<string, bool> tmpIsAttribute;
-				map<string, bool> tmpNodeExists;
-				
-				rxw.includeMaps( pathToParent( path ), &tmpOrderedPaths, &tmpData,  &tmpIsAttribute, &tmpNodeExists );
-				merge( &tmpOrderedPaths, &tmpData,  &tmpIsAttribute, &tmpNodeExists );
+				string tn = stripIndex( tagName( kv.first ) );
 
-
-				applyOverrides( makeOverrideMap( path ) );
-
-				addAttribute( path + ":processed", "true" );
-
-				// now look for new includes and parse those
-				if ( unprocessedIncludes( pathToParent(path) ) > 0 ){
-					parseIncludes( pathToParent(path) );
+				if ( unique_tag_index.count( tn ) == 0 ){
+					unique_tag_index[tn] = countTag( kv.first, 0, indexOf( path ) );
 				}
+			}
+			
+			// the tag index is modified! so it will tell us where to stop!
+			config_map tmpData;
+			vector<string> tmpOrderedKeys;
+			map<string, size_t> original_index = unique_tag_index;
+			rxw.makeMap( pathToParent( path ), &tmpOrderedKeys, &tmpData, unique_tag_index );
 
-			} else {
-				WARN( classname(), "Include not found: " << ifn );
-				nNotFound++;
+			// if there is a conflict then increment what is already in here
+			for ( auto kv : unique_tag_index ){
+				int diff = unique_tag_index[kv.first] - original_index[ kv.first ];
+				if ( diff > 0 )
+					incrementTagIndex( pathToParent( path ), kv.first, diff, pathIndex, orderedKeys.size() );
 			}
 
+			// finally copy in all of the new data!
+			orderedKeys.insert( it, tmpOrderedKeys.begin(), tmpOrderedKeys.end() );
+			for ( auto kv : tmpData ){
+				data[ kv.first ] = kv.second;
+			}
+
+			// mark the include as processed
 		}
 
+		if ( unprocessedIncludes( "" ) > 0 )
+			parseIncludes( "" );
+		
 
 		return nNotFound;
-	   //DEBUG( report() );
 	}
 
 	bool XmlConfig::conflictExists( map<string, string> *_data, string &shortestConflict ){
@@ -1166,82 +1224,6 @@ namespace jdb{
 		} // loop on _data
 		shortestConflict = stripIndex( shortestConflict );
 		return conflicts;
-	}
-
-	void XmlConfig::merge( vector<string> *_orderedPaths, map<string, string> *_data, map<string, bool> *_isAttribute, map<string, bool> *_exists, bool resolveConflicts ){
-
-
-		////////!!!!!!!!!!!!!!! TODO
-		/// ADD support for new ordered Paths!!!!!!
-		/// !!!!!
-		/// !!!!!
-		/// !!!!!
-		/// 
-
-
-		string shortestConflict = "";
-		bool conflicts = conflictExists( _data, shortestConflict );
-		INFOC( "Attempting to merge config, conflicts = " << bts( conflicts ) );
-		while( conflicts && resolveConflicts ){
-			map<string, string> _d;
-			map<string, bool> _ia;
-			map<string, bool> _e;
-			vector<string> _op;
-
-			int cDepth = depthOf( shortestConflict );
-			int incBy = numberOf( shortestConflict );
-			if ( incBy <= 0 ) incBy = 1;
-			// cout << "Depth of conflict (" << quote(shortestConflict) <<") = " << depthOf( shortestConflict) << endl;
-			// cout << "increment by " << incBy << endl;
-
-			for ( auto kv : *_data ){
-				string str = kv.first;
-				
-				// no conflict here
-				if ( str.find( shortestConflict ) == string::npos ) {
-					// cout << "[NO CONFLICT] " << str << " with " << shortestConflict << endl;
-					_d[ str ] = (*_data)[ kv.first ];
-					_ia[ str ] = (*_isAttribute)[ kv.first ];
-					_e[ str ] = (*_exists)[ kv.first ];
-					continue;
-				}
-
-				string ptr = pathToDepth( str, cDepth );
-				string npp = incrementPath( pathToDepth( str, cDepth ), incBy );
-				
-				string::size_type index = 0;
-				index = str.find( ptr, index);
-
-				if ( index != string::npos ){
-					/* Make the replacement. */
-					str.replace(index, ptr.length(), npp );
-					// cout << "[REPLACE] " << ptr << ", with " << npp << " = " << str << endl;
-
-					_d[ str ] = (*_data)[ kv.first ];
-					_ia[ str ] = (*_isAttribute)[ kv.first ];
-					_e[ str ] = (*_exists)[ kv.first ];
-				}
-			}
-
-			// replace existing
-			(*_data) = _d;
-			(*_isAttribute) = _ia;
-			(*_exists) = _e;
-
-			conflicts = conflictExists( _data, shortestConflict );
-		} // while
-
-		INFOC( "Conflicts resolved" );
-		for ( auto kv : *_data ){
-			this->data[ kv.first ] = kv.second;
-		}
-		for ( auto kv : *_isAttribute ){
-			this->isAttribute[ kv.first ] = kv.second;
-		}
-		for ( auto kv : *_exists ){
-			this->nodeExists[ kv.first ] = kv.second;
-		}
-
 	}
 
 	int XmlConfig::numberOf( string _path ){
@@ -1317,51 +1299,51 @@ namespace jdb{
 		}
 
 		data[ nodePath ] = value;
-		nodeExists[ nodePath ] = true;
+		orderedKeys.push_back( nodePath );
 	}
 
 	void XmlConfig::addAttribute( string nodePath, string value ){
-		DEBUG( classname(), "(" << nodePath << " = " << value << ")" );
+		INFOC( "(" << nodePath << " = " << value << ")" );
 		if ( exists( nodePath ) ){
 			WARN( classname(), "Overwriting nodePath " << nodePath );
 		}
 
-		// TODO: test nodePath for attribute char, set isAttribute map and exists map
-		// 
-
-		
 		string base = basePath( nodePath );
 		if ( !exists( base  ) )
 			addNode( base, "" );
 		
 		// add myself
 		data[ nodePath ] = value;
-		isAttribute[ nodePath ] = true;
-		nodeExists[ nodePath ] = true;
+		orderedKeys.push_back( nodePath );
 
 	}
 
-	void XmlConfig::deleteNode( string nodePath ){
-		if ( !exists( nodePath ) ) return;
-
+	size_t XmlConfig::deleteNode( string nodePath ){
+		if ( !exists( nodePath ) ) return 0;
+		size_t n = 0;
 		vector<string> paths = childrenOf( nodePath, -1, true );
 
 		// first delete children
 		for ( string path:paths ){
-			data.erase( nodePath );
-			isAttribute.erase( nodePath );
-			nodeExists.erase( nodePath );			
+			data.erase( path );
+			orderedKeys.erase( iteratorOf( path ) );
+			n++;
 		}
 
 		// now delete self
 		data.erase( nodePath );
-		isAttribute.erase( nodePath );
-		nodeExists.erase( nodePath );
+		orderedKeys.erase( iteratorOf( nodePath ) );
+		n++;
+		return n;
 	}
 
-	// just an alias
-	void XmlConfig::deleteAttribute( string path ){
-		deleteNode( path );
+	// deletes the attribute node
+	bool XmlConfig::deleteAttribute( string path ){
+		if ( data.count( path ) == 0 )
+			return false;
+		data.erase( path );
+		orderedKeys.erase( iteratorOf( path ) );
+		return true;
 	}
 
 	map<string, string> XmlConfig::makeOverrideMap( string _nodePath ){

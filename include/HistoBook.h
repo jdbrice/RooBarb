@@ -66,9 +66,13 @@ namespace jdb{
 		bool saveAllOnExit;
 
 		TH1 * nullHisto;
+		bool strict = true;
 
 	public:
 		
+		void setStrict( bool _strict ){
+			this->strict = _strict;
+		}
 		static vector<double> contentVector( TH1* _h ){
 			vector<double> c;
 			if ( _h == nullptr ) return c;
