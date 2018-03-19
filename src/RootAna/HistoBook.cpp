@@ -485,9 +485,9 @@ namespace jdb{
 	}	// make
 	void HistoBook::makeAll( XmlConfig config, string nodeName ){
 
-		vector<string> paths = config.childrenOf( nodeName );
+		vector<string> paths = config.childrenOf( nodeName, "Histo" );
 		TRACE( classname(), " Found " << paths.size() << " histogram paths " );
-
+		
 		
 
 		for ( unsigned int i=0; i < paths.size(); i++ ){

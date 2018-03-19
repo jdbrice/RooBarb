@@ -1186,6 +1186,7 @@ namespace jdb{
 			map<string, string> _d;
 			map<string, bool> _ia;
 			map<string, bool> _e;
+			vector<string> _op;
 
 			int cDepth = depthOf( shortestConflict );
 			int incBy = numberOf( shortestConflict );
