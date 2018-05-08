@@ -203,17 +203,19 @@ namespace jdb{
 	}
 
 	void XmlConfig::incrementTagIndex( string path, string tagname, int n, size_t start, size_t stop ){
-		if ( stop > orderedKeys.size() )
-			stop = orderedKeys.size();
+		DEBUGC( "path=" << quote(path) << ", tagname=" << quote(tagname)  << ",  n=" << n << ", start=" << start << ", stop=" << stop);
+		
+		if ( stop >= orderedKeys.size() )
+			stop = orderedKeys.size() - 1;
 		if ( start > orderedKeys.size() )
 			start = 0;
-		int myDepth = depthOf( path );
 
+		int myDepth = depthOf( path );
+		DEBUGC( "myDepth=" << myDepth );
 		vector<string> delete_nodes;
-		DEBUGC( path << ", " << tagname << ", " << start << ", " << stop );
+		
 		for ( size_t i = stop; i >= start; i-- ){
 			int d = depthOf( orderedKeys[i] );
-			// DEBUGC( "myDepth = " << myDepth << ", depth = " << d );
 			if ( d != myDepth+1 )
 				continue;
 			if ( isAttribute( orderedKeys[i] ) )
@@ -226,7 +228,7 @@ namespace jdb{
 			string npath = incrementPath( orderedKeys[i], n );
 
 			if ( exists( npath ) ){
-				incrementTagIndex( path, tagname, 1, indexOf( npath ), orderedKeys.size() );
+				incrementTagIndex( path, tagname, 1, indexOf( npath ), orderedKeys.size() - 1 );
 			}
 			rewrite( orderedKeys[i], npath );
 		}
@@ -1131,9 +1133,58 @@ namespace jdb{
 		}
 	}
 
+	void XmlConfig::include_xml( RapidXmlWrapper*rxw, string path ){
+		DEBUGC( "rxw=" << rxw << ", path=" << path );
+		auto it       = find( orderedKeys.begin(), orderedKeys.end(), path);
+		int bd        = depthOf( path );
+		int pathIndex = indexOf(path);
+		DEBUGC( "Include @ " << path << " at depth " << bd << ", order index = " << indexOf( path ));
+		map<string, size_t> unique_tag_index;
+
+		// map the indices at this level for whatever is already in the map
+		for ( auto kv : data ){
+			if ( depthOf(kv.first) > bd )
+				continue;
+			if ( indexOf( kv.first ) > pathIndex )
+				continue;
+
+			string tn = stripIndex( tagName( kv.first ) );
+
+			if ( unique_tag_index.count( tn ) == 0 ){
+				unique_tag_index[tn] = countTag( kv.first, 0, indexOf( path ) );
+			}
+		} // loop over the data to map
+		
+		// the tag index is modified! so it will tell us where to stop!
+		config_map tmpData;
+		vector<string> tmpOrderedKeys;
+		map<string, size_t> original_index = unique_tag_index;
+		rxw->makeMap( pathToParent( path ), &tmpOrderedKeys, &tmpData, unique_tag_index );
+
+		// if there is a conflict then increment what is already in here
+		for ( auto kv : unique_tag_index ){
+			DEBUGC( "checking unique tag: " << kv.first );
+			int diff = unique_tag_index[kv.first] - original_index[ kv.first ];
+			if ( diff > 0 )
+				incrementTagIndex( pathToParent( path ), kv.first, diff, pathIndex, orderedKeys.size() );
+		}
+
+		// finally copy in all of the new data!
+		orderedKeys.insert( it, tmpOrderedKeys.begin(), tmpOrderedKeys.end() );
+		for ( auto kv : tmpData ){
+			data[ kv.first ] = kv.second;
+		}
+	} // include_xml
+
+	void XmlConfig::include_xml( string xmlstr, string path ){
+		RapidXmlWrapper rxw;
+		rxw.parseXmlString( xmlstr );
+		include_xml( &rxw, path );
+	}
+
+
 	int XmlConfig::parseIncludes( string searchPath) {
 		DEBUG( classname(), " Looking for Include tags under : " << quote( searchPath ) );
-
 		int nNotFound = 0;
 		vector<string> allPaths = childrenOf( searchPath, "Include" );
 
@@ -1143,66 +1194,33 @@ namespace jdb{
 			DEBUGC( "is processed : " << getBool( path + ":processed", false ) );
 			if ( true == get<bool>( path + ":processed", false ) )
 				continue;
+			// mark the include as processed so that we dont recurse infinitely
 			set( path +":processed", "true" );
 
-			// get the location of this path before we change anything
-			auto it = find( orderedKeys.begin(), orderedKeys.end(), path);
-			int bd = depthOf( path );
-			int pathIndex = indexOf(path);
-			string rurl = resolveFilename( get<string>( path+":url" ) );
-			if ( "" == rurl ){
+			string raw_url = get<string>( path+":url" );
+			string rurl = resolveFilename( raw_url );
+			if ( "" != rurl ){
+				// include from file
+				RapidXmlWrapper rxw(  rurl  );
+				include_xml( &rxw, path );
+			} else if ( exists( raw_url ) ){
+				// include from node path
+				
+				string xmlstr = XmlConfig::declarationV1;
+				xmlstr += "\n<config>";
+				xmlstr += toXml( raw_url );
+				xmlstr += "\n</config>";
+				
+				RapidXmlWrapper rxw;
+				rxw.parseXmlString( xmlstr );
+				include_xml( &rxw, path );
+			} else {
 				ERRORC( "Could not resolve include of " << get<string>( path+":url" ) );
-				set( path +":processed", "true" );
-				continue;
 			}
-			
-			DEBUGC( "Processing Include @ " << path << " url=" << rurl );
-			DEBUGC( "Include @ " << path << " with url = " << quote( rurl ) << " at depth " << bd );
-			DEBUGC( "At order index = " << indexOf( path ) );
-			RapidXmlWrapper rxw(  rurl  );
-			
-			map<string, size_t> unique_tag_index;
-
-			// map the indices at this level for whatever is already in the map
-			for ( auto kv : data ){
-				if ( depthOf(kv.first) > bd )
-					continue;
-				if ( indexOf( kv.first ) > pathIndex )
-					continue;
-
-				string tn = stripIndex( tagName( kv.first ) );
-
-				if ( unique_tag_index.count( tn ) == 0 ){
-					unique_tag_index[tn] = countTag( kv.first, 0, indexOf( path ) );
-				}
-			}
-			
-			// the tag index is modified! so it will tell us where to stop!
-			config_map tmpData;
-			vector<string> tmpOrderedKeys;
-			map<string, size_t> original_index = unique_tag_index;
-			rxw.makeMap( pathToParent( path ), &tmpOrderedKeys, &tmpData, unique_tag_index );
-
-			// if there is a conflict then increment what is already in here
-			for ( auto kv : unique_tag_index ){
-				int diff = unique_tag_index[kv.first] - original_index[ kv.first ];
-				if ( diff > 0 )
-					incrementTagIndex( pathToParent( path ), kv.first, diff, pathIndex, orderedKeys.size() );
-			}
-
-			// finally copy in all of the new data!
-			orderedKeys.insert( it, tmpOrderedKeys.begin(), tmpOrderedKeys.end() );
-			for ( auto kv : tmpData ){
-				data[ kv.first ] = kv.second;
-			}
-
-			// mark the include as processed
-		}
+		} // loop on includes
 
 		if ( unprocessedIncludes( "" ) > 0 )
 			parseIncludes( "" );
-		
-
 		return nNotFound;
 	}
 

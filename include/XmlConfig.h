@@ -590,6 +590,15 @@ namespace jdb {
 		void addAttribute( string nodePath, string value="" );
 		bool deleteAttribute( string path );
 
+		// void checkNewIncludes( string nodePath){
+		// 	if ( unprocessedIncludes( nodePath ) ){
+		// 		parseIncludes( nodePath );
+		// 	}
+		// }
+		void include_xml( RapidXmlWrapper * rxw, string path );
+		void include_xml( string xmlstr, string path );
+		
+
 	protected:
 
 		size_t indexOf( string path ){
@@ -669,6 +678,7 @@ namespace jdb {
 		// parseInclude nodes
 		// @return 	number of includes that could not be resolved
 		int parseIncludes( string nodePath = "" );
+
 		int unprocessedIncludes( string nodePath = "" );
 		void merge( vector<string> *_opaths, map<string, string> *_data, bool resolveConflicts = true  ){}
 		bool conflictExists( map<string, string> *_data, string &shortestConflict );

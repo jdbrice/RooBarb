@@ -97,6 +97,8 @@ namespace jdb{
 			if ( _h->GetNbinsY() > 1 ) nDims = 2;
 			if ( _h->GetNbinsZ() > 1 ) nDims = 3;
 
+			// cout << "nbX=" << _h->GetNbinsX() << ", nbY=" << _h->GetNbinsY() << ", nbZ=" << _h->GetNbinsZ() << endl;
+
 			string xml = "<HistogramData name=" + quote( _h->GetName() ) + " title=" +quote( _h->GetTitle() ) + " dims=" + quote(nDims) + ">";
 			if ( nDims >= 1 )
 				xml += "\n\t" + XmlHistogram::toXml( _h->GetXaxis(), "X" );
@@ -107,15 +109,19 @@ namespace jdb{
 
 			xml += "\n\t<Values>";
 			string delim = "";
+			size_t nValues = 0;
 			for ( int ix = 1; ix <= _h->GetNbinsX(); ix++ ){
 				for ( int iy = 1; iy <= _h->GetNbinsY(); iy++ ){
 					for ( int iz = 1; iz <= _h->GetNbinsZ(); iz++ ){
 						int globalBin = _h->GetBin( ix, iy, iz );
+						// cout << "globalBin = " << globalBin << " ix= " << ix << ", iy = " << iy << ", iz = " << iz << " v = " << _h->GetBinContent( globalBin ) << endl;
 						xml += delim + dts( _h->GetBinContent( globalBin ) );
 						delim = ", ";
+						nValues++;
 					}
 				}
 			}
+			// cout << "Saved " << nValues << endl;
 			xml += "</Values>";
 			
 			xml += "\n\t<Errors>";
@@ -143,24 +149,28 @@ namespace jdb{
 				return nullptr;
 			string name = config.getString( path + ":name" );
 			string title = config.getString( path + ":title" );
-			int nDims = config.getInt( path + ":dims", 1 );
+			// int nDims = config.getInt( path + ":dims", 1 );
 			HistoBins bx( config, path + ".BinEdgesX" );
 			HistoBins by( config, path + ".BinEdgesY" );
 			HistoBins bz( config, path + ".BinEdgesZ" );
 
-			cout << "Making " << nDims << "D name=" << name << " title=" << title << endl;
+			// cout << "Making " << nDims << "D name=" << name << " title=" << title << endl;
 			TH1 * _h = HistoBook::make( "D", name, title, bx, by, bz );
+			// cout << "nbX=" << _h->GetNbinsX() << ", nbY=" << _h->GetNbinsY() << ", nbZ=" << _h->GetNbinsZ() << endl;
 
 			vector<float> values = config.getFloatVector( path + ".Values" );
 			vector<float> errors = config.getFloatVector( path + ".Errors" );
+			// cout << "nValues = " << values.size() << endl;
+
+			size_t iVal = 0;
 			for ( int ix = 1; ix <= _h->GetNbinsX(); ix++ ){
 				for ( int iy = 1; iy <= _h->GetNbinsY(); iy++ ){
 					for ( int iz = 1; iz <= _h->GetNbinsZ(); iz++ ){
 						int i = _h->GetBin( ix, iy, iz );
-						if (  i-1 >= values.size() ) continue;
-						_h->SetBinContent( i, values[i-1] );
-						if (  i-1 >= errors.size() ) continue;
-						_h->SetBinError( i, errors[i-1] );
+						// cout << "globalBin = " << i << " ix= " << ix << ", iy = " << iy << ", iz = " << iz << "v = " << values[i-1] << endl;
+						_h->SetBinContent( i, values[iVal] );
+						_h->SetBinError( i, errors[iVal] );
+						iVal ++;
 					}
 				}
 			}

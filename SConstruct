@@ -15,7 +15,7 @@ JDB_LIB			= os.environ[ "JDB_LIB" ]
 
 cppDefines 		= {}
 cppFlags 		= ['-Wall' ]#, '-Werror']
-cxxFlags 		= ['-std=c++11', '-fPIC' ]
+cxxFlags 		= ['-std=c++11', '-fPIC', '-O3' ]
 
 paths 			= [ '.', 			# dont really like this but ended up needing for root dict to work ok
 					'include', 
