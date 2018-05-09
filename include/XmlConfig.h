@@ -595,6 +595,7 @@ namespace jdb {
 		// 		parseIncludes( nodePath );
 		// 	}
 		// }
+		void include_xml( RapidXmlWrapper * rxw, string path, vector<string>::iterator );
 		void include_xml( RapidXmlWrapper * rxw, string path );
 		void include_xml( string xmlstr, string path );
 		

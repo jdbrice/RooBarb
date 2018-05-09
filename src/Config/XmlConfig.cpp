@@ -1134,8 +1134,12 @@ namespace jdb{
 	}
 
 	void XmlConfig::include_xml( RapidXmlWrapper*rxw, string path ){
-		DEBUGC( "rxw=" << rxw << ", path=" << path );
 		auto it       = find( orderedKeys.begin(), orderedKeys.end(), path);
+		include_xml( rxw, path, it );
+	}
+	void XmlConfig::include_xml( RapidXmlWrapper*rxw, string path, vector<string>::iterator it ){
+		DEBUGC( "rxw=" << rxw << ", path=" << path );
+		
 		int bd        = depthOf( path );
 		int pathIndex = indexOf(path);
 		DEBUGC( "Include @ " << path << " at depth " << bd << ", order index = " << indexOf( path ));
@@ -1159,14 +1163,14 @@ namespace jdb{
 		config_map tmpData;
 		vector<string> tmpOrderedKeys;
 		map<string, size_t> original_index = unique_tag_index;
-		rxw->makeMap( pathToParent( path ), &tmpOrderedKeys, &tmpData, unique_tag_index );
+		rxw->makeMap( path, &tmpOrderedKeys, &tmpData, unique_tag_index );
 
 		// if there is a conflict then increment what is already in here
 		for ( auto kv : unique_tag_index ){
 			DEBUGC( "checking unique tag: " << kv.first );
 			int diff = unique_tag_index[kv.first] - original_index[ kv.first ];
 			if ( diff > 0 )
-				incrementTagIndex( pathToParent( path ), kv.first, diff, pathIndex, orderedKeys.size() );
+				incrementTagIndex( path, kv.first, diff, pathIndex, orderedKeys.size() );
 		}
 
 		// finally copy in all of the new data!
@@ -1202,7 +1206,9 @@ namespace jdb{
 			if ( "" != rurl ){
 				// include from file
 				RapidXmlWrapper rxw(  rurl  );
-				include_xml( &rxw, path );
+				// add it at the exact location of Include tag
+				auto it = find( orderedKeys.begin(), orderedKeys.end(), path);
+				include_xml( &rxw, pathToParent( path ), it );
 			} else if ( exists( raw_url ) ){
 				// include from node path
 				
@@ -1213,7 +1219,8 @@ namespace jdb{
 				
 				RapidXmlWrapper rxw;
 				rxw.parseXmlString( xmlstr );
-				include_xml( &rxw, path );
+				auto it = find( orderedKeys.begin(), orderedKeys.end(), path);
+				include_xml( &rxw, pathToParent( path ), it );
 			} else {
 				ERRORC( "Could not resolve include of " << get<string>( path+":url" ) );
 			}
