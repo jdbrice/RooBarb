@@ -187,8 +187,6 @@ RooPlotLib &jdb::RooPlotLib::set( string option, vector<string> params ){
 	}
 
 	option = normalize( option );
-	// force the param name to lowercase
-	transform(option.begin(), option.end(), option.begin(), ::tolower);
 
 	string p0 = "", p1 = "", p2 = "", p3 = "", p4 = "";
 	if ( params.size() >= 1 ) p0 = params[0];
@@ -422,14 +420,21 @@ RooPlotLib &jdb::RooPlotLib::set( XmlConfig &cfg, string nodePath ){
 	return *this;
 }
 
-string jdb::RooPlotLib::normalize( string str ){
-	// remove -
+string jdb::RooPlotLib::normalizeAttribute( string str ){
+	// remove '-'
 	std::string::iterator end_pos = std::remove(str.begin(), str.end(), '-');
 	str.erase(end_pos, str.end());
 
+	// remove '_'
 	end_pos = std::remove(str.begin(), str.end(), '_');
 	str.erase(end_pos, str.end());
+
+	// lowercase
+	transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
+}
+string jdb::RooPlotLib::normalize( string str ){
+	return RooPlotLib::normalizeAttribute(str);
 }
 
 RooPlotLib &jdb::RooPlotLib::draw(){

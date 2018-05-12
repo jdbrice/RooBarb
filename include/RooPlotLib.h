@@ -93,6 +93,7 @@ namespace jdb{
 		RooPlotLib &draw();
 		RooPlotLib &draw( string appendDrawOpt );
 
+		static string normalizeAttribute( string str );
 		string normalize( string sin );
 
 		int color( string color );
