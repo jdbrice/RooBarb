@@ -110,6 +110,12 @@ namespace jdb{
 			return hNew;
 		}
 
+		static TH1 * rebin1D( string name, TH1 * _hOld, HistoBins &_bx ){
+			assert( _hOld && "ERROR: NULL Histogram passed in");
+			TH1 * hNew = (TH1*) _hOld->Rebin( _bx.nBins(), name.c_str(), _bx.bins.data() );
+			return hNew;
+		}
+
 
 		/* Makes a vector of bins with fixed width
 		 * Divides the range high - low into a fixed number of bins from low to high"

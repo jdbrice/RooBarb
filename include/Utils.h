@@ -53,6 +53,14 @@ namespace jdb{
 	 */
 	std::string ts( unsigned int u, int len  = -1);
 
+	/* Converts a size_t to a string
+	 * @u unsigned int to convert
+	 * @len the maximum length of string
+	 * 
+	 * @return the string representation of the value
+	 */
+	std::string ts( size_t u, int len  = -1);
+
 	/* Removes trailing zeros
 	 * @in string representation of a number
 	 * 

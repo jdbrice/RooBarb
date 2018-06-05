@@ -45,6 +45,18 @@ namespace jdb{
 			return (to_string( (long long unsigned int) u)).substr( 0, len );
 	}
 
+	/* Converts a size_t to a string
+	 * @u unsigned int to convert
+	 * @len the maximum length of string
+	 * @return the string representation of the value
+	 */
+	std::string ts( size_t u, int len ){
+		if ( len <= -1 )
+			return to_string( u);
+		else 
+			return (to_string(u)).substr( 0, len );
+	}
+
 	/* Removes trailing zeros
 	 * @in string representation of a number
 	 * @return The input string with trailing zeros removed
