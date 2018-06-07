@@ -50,6 +50,7 @@ namespace jdb{
 		string defaultStylePath ="";
 
 		shared_ptr<HistoBook> linkedBook;
+		XmlConfig* linkedConfig; //never any ownership
 
 		const float fontScale = 360.0f;
 
@@ -73,18 +74,20 @@ namespace jdb{
 		RooPlotLib &style( string name );
 
 		void link( shared_ptr<HistoBook> book );
+		void link( XmlConfig* xfg );
 
 		
-		RooPlotLib &set( string opt, float p0 = -999, float p1 = -999, float p2 = -999, float p3 = -999 ){
+		RooPlotLib &set( string opt, float p0, float p1 = -999, float p2 = -999, float p3 = -999 ){
 			return set( opt, { dts(p0), dts(p1), dts(p2), dts(p3) } );
 		}
 		RooPlotLib &set( string, initializer_list<string> l );
 		RooPlotLib &set( string, vector<string> l );
-		RooPlotLib &set( string opt, string p0 ="", string p1 ="", string p2 ="", string p3 =""){
+		RooPlotLib &set( string opt, string p0, string p1 ="", string p2 ="", string p3 =""){
 			return set( opt, { p0, p1, p2, p3 } );
 		}
 		RooPlotLib &set( XmlConfig * cfg, string np );
 		RooPlotLib &set( XmlConfig &cfg, string np );
+		RooPlotLib &set( string np );
 
 		/**
 		 * Draws the object being styled

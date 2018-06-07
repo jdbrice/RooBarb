@@ -42,6 +42,10 @@ void jdb::RooPlotLib::link( shared_ptr<HistoBook> book ){
 	this->linkedBook = book;
 }
 
+void jdb::RooPlotLib::link( XmlConfig* xfg ){
+	this->linkedConfig = xfg;
+}
+
 RooPlotLib & jdb::RooPlotLib::style( TObject * obj) {
     DEBUG(classname(), "( " << obj << ", name=" << obj->GetName() << " )")
     styling = obj;
@@ -419,6 +423,19 @@ RooPlotLib &jdb::RooPlotLib::set( XmlConfig &cfg, string nodePath ){
 
 	return *this;
 }
+
+RooPlotLib &jdb::RooPlotLib::set(string nodePath ){
+	DEBUG(classname(), "");
+
+	if ( nullptr == this->linkedConfig ){
+		ERRORC( "No config linked" );
+		return *this;
+	}
+
+	return set( this->linkedConfig, nodePath );
+}
+
+
 
 string jdb::RooPlotLib::normalizeAttribute( string str ){
 	// remove '-'
