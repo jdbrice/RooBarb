@@ -246,6 +246,15 @@ namespace jdb{
 		return def;
 	}
 
+
+	template <>
+	string XmlConfig::get( string path ) const {
+		return getXString(path);
+	}
+	template <>
+	string XmlConfig::get( string path, string def ) const {
+		return getXString(path, def);
+	}
 	string XmlConfig::getString( string nodePath, string def ) const {
 		return getXString(nodePath, def);
 	}
