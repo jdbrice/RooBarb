@@ -173,7 +173,16 @@ void jdb::RooPlotLib::style_axes( string opt, vector<string> params ){
 			opt = (bool) ip3;
 		
 		axis->SetNdivisions( n1, n2, n3, opt );
+	} else if ( "moreloglabels" == axis_opt || "mll" == axis_opt ){
+		axis->SetMoreLogLabels( ip0 );
+		cout << "MORE LOG LABELS" << endl;
+	} else if ( "noexp" == axis_opt ){
+		axis->SetNoExponent( ip0 );
+		cout << "NO EXPONENT" << endl;
 	}
+	cout << "STYLE AXIS : " << axis_opt << endl;
+
+
 }
 
 /* sets visual styles 
